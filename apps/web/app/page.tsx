@@ -1,44 +1,44 @@
-import type { Link } from '@repo/api';
-import { Button } from '@repo/ui/button';
-import Image, { type ImageProps } from 'next/image';
+import type { Link } from '@repo/api'
+import { Button } from '@repo/ui/button'
+import Image, { type ImageProps } from 'next/image'
 
-import styles from './page.module.css';
+import styles from './page.module.css'
 
 type Props = Omit<ImageProps, 'src'> & {
-  srcLight: string;
-  srcDark: string;
-};
+  srcLight: string
+  srcDark: string
+}
 
 const ThemeImage = (props: Props) => {
-  const { srcLight, srcDark, ...rest } = props;
+  const { srcLight, srcDark, ...rest } = props
 
   return (
     <>
       <Image {...rest} src={srcLight} className="imgLight" />
       <Image {...rest} src={srcDark} className="imgDark" />
     </>
-  );
-};
+  )
+}
 
 async function getLinks(): Promise<Link[]> {
   try {
     const res = await fetch('http://localhost:3000/links', {
-      cache: 'no-store',
-    });
+      cache: 'no-store'
+    })
 
     if (!res.ok) {
-      throw new Error('Failed to fetch links');
+      throw new Error('Failed to fetch links')
     }
 
-    return res.json();
+    return res.json()
   } catch (error) {
-    console.error('Error fetching links:', error);
-    return [];
+    console.error('Error fetching links:', error)
+    return []
   }
 }
 
 export default async function Home() {
-  const links = await getLinks();
+  const links = await getLinks()
 
   return (
     <div className={styles.page}>
@@ -66,13 +66,7 @@ export default async function Home() {
             target="_blank"
             rel="noopener noreferrer"
           >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
+            <Image className={styles.logo} src="/vercel.svg" alt="Vercel logomark" width={20} height={20} />
             Deploy now
           </a>
           <a
@@ -105,10 +99,7 @@ export default async function Home() {
             ))}
           </div>
         ) : (
-          <div style={{ color: '#666' }}>
-            No links available. Make sure the NestJS API is running on port
-            3000.
-          </div>
+          <div style={{ color: '#666' }}>No links available. Make sure the NestJS API is running on port 3000.</div>
         )}
       </main>
 
@@ -118,30 +109,14 @@ export default async function Home() {
           target="_blank"
           rel="noopener noreferrer"
         >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
+          <Image aria-hidden src="/window.svg" alt="Window icon" width={16} height={16} />
           Examples
         </a>
-        <a
-          href="https://turborepo.dev?utm_source=create-turbo"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
+        <a href="https://turborepo.dev?utm_source=create-turbo" target="_blank" rel="noopener noreferrer">
+          <Image aria-hidden src="/globe.svg" alt="Globe icon" width={16} height={16} />
           Go to turborepo.dev →
         </a>
       </footer>
     </div>
-  );
+  )
 }

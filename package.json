@@ -11,11 +11,25 @@
     "test": "turbo run test",
     "test:e2e": "turbo run test:e2e",
     "lint": "turbo run lint",
-    "format": "prettier --write \"**/*.{ts,tsx,md}\""
+    "format": "prettier --write \"**/*.{ts,tsx,md}\"",
+    "prepare": "husky"
+  },
+  "lint-staged": {
+    "apps/web/**/*.{ts,tsx}": [
+      "pnpm --filter web exec eslint --fix"
+    ],
+    "apps/api/**/*.ts": [
+      "pnpm --filter api exec eslint --fix"
+    ],
+    "**/*.{ts,tsx,md,json}": [
+      "prettier --write"
+    ]
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7",
     "prettier": "^3.2.5",
     "turbo": "^2.8.0"
   },
