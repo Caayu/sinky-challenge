@@ -1,8 +1,9 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus, Logger } from '@nestjs/common'
 import { Response } from 'express'
-import { TaskTitleRequiredError, TaskAlreadyCompletedError } from '../../tasks/domain/errors'
+import { TaskTitleRequiredError, TaskAlreadyCompletedError, TaskNotFoundError } from '../../tasks/domain/errors'
+import { ErrorResponseDto } from '../dto/error-response.dto'
 
-@Catch(TaskTitleRequiredError, TaskAlreadyCompletedError)
+@Catch(TaskTitleRequiredError, TaskAlreadyCompletedError, TaskNotFoundError)
 export class DomainExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(DomainExceptionFilter.name)
 
@@ -10,16 +11,21 @@ export class DomainExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp()
     const response = ctx.getResponse<Response>()
 
-    // Default to Bad Request for domain validation errors
-    const status = HttpStatus.BAD_REQUEST
-    const message = exception.message
+    let status = HttpStatus.BAD_REQUEST
+    let errorType = 'Bad Request'
 
-    this.logger.warn(`Domain exception caught: ${exception.message}`)
+    if (exception instanceof TaskNotFoundError) {
+      status = HttpStatus.NOT_FOUND
+      errorType = 'Not Found'
+    }
+
+    const message = exception.message
+    this.logger.warn(`Domain exception caught: ${message}`)
 
     response.status(status).json({
       statusCode: status,
       message: message,
-      error: 'Bad Request'
-    })
+      error: errorType
+    } as ErrorResponseDto)
   }
 }

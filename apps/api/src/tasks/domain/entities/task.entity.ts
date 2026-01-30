@@ -47,6 +47,19 @@ export class Task {
     this.props.updatedAt = new Date()
   }
 
+  public update(props: Partial<Omit<TaskProps, 'updatedAt' | 'createdAt'>>): void {
+    if (props.title !== undefined) {
+      this.updateTitle(props.title)
+    }
+    if (props.description !== undefined) {
+      this.props.description = props.description
+    }
+    if (props.isCompleted !== undefined) {
+      this.props.isCompleted = props.isCompleted
+    }
+    this.props.updatedAt = new Date()
+  }
+
   get id(): string {
     return this._id
   }

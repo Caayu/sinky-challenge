@@ -1,5 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common'
 import { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
+import { eq } from 'drizzle-orm'
 import { TaskRepository } from '../../../domain/repositories/task.repository'
 import { Task } from '../../../domain/entities/task.entity'
 import { DRIZZLE_DB } from '../../../../database/database.provider'
@@ -19,5 +20,52 @@ export class DrizzleTaskRepository implements TaskRepository {
       createdAt: task.createdAt,
       updatedAt: task.updatedAt
     })
+  }
+
+  async findById(id: string): Promise<Task | null> {
+    const result = await this.db.select().from(tasks).where(eq(tasks.id, id)).get()
+
+    if (!result) {
+      return null
+    }
+
+    return Task.restore(result.id, {
+      title: result.title,
+      description: result.description ?? undefined,
+      isCompleted: result.isCompleted,
+      createdAt: result.createdAt,
+      updatedAt: result.updatedAt
+    })
+  }
+
+  async findAll(): Promise<Task[]> {
+    const results = await this.db.select().from(tasks).all()
+
+    return results.map((result) =>
+      Task.restore(result.id, {
+        title: result.title,
+        description: result.description ?? undefined,
+        isCompleted: result.isCompleted,
+        createdAt: result.createdAt,
+        updatedAt: result.updatedAt
+      })
+    )
+  }
+
+  async update(task: Task): Promise<void> {
+    await this.db
+      .update(tasks)
+      .set({
+        title: task.title,
+        description: task.description,
+        isCompleted: task.isCompleted,
+        updatedAt: task.updatedAt
+      })
+      .where(eq(tasks.id, task.id))
+      .run()
+  }
+
+  async delete(id: string): Promise<void> {
+    await this.db.delete(tasks).where(eq(tasks.id, id)).run()
   }
 }
