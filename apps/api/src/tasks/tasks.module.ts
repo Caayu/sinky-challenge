@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common'
+import { Module, HttpStatus, OnModuleInit } from '@nestjs/common'
 import { DatabaseModule } from '../database/database.module'
 import { DrizzleTaskRepository } from './infrastructure/database/drizzle/drizzle-task.repository'
 import { CreateTaskUseCase } from './application/use-cases/create-task.use-case'
@@ -7,6 +7,8 @@ import { ListTasksUseCase } from './application/use-cases/list-tasks.use-case'
 import { UpdateTaskUseCase } from './application/use-cases/update-task.use-case'
 import { DeleteTaskUseCase } from './application/use-cases/delete-task.use-case'
 import { TasksController } from './presentation/controllers/tasks.controller'
+import { DomainErrorRegistry } from '../common/filters/domain-error.registry'
+import { TaskTitleRequiredError, TaskAlreadyCompletedError, TaskNotFoundError } from './domain/errors'
 
 @Module({
   imports: [DatabaseModule],
@@ -24,4 +26,10 @@ import { TasksController } from './presentation/controllers/tasks.controller'
   ],
   exports: [CreateTaskUseCase]
 })
-export class TasksModule {}
+export class TasksModule implements OnModuleInit {
+  onModuleInit() {
+    DomainErrorRegistry.register(TaskTitleRequiredError, HttpStatus.BAD_REQUEST, 'Bad Request')
+    DomainErrorRegistry.register(TaskAlreadyCompletedError, HttpStatus.CONFLICT, 'Conflict')
+    DomainErrorRegistry.register(TaskNotFoundError, HttpStatus.NOT_FOUND, 'Not Found')
+  }
+}

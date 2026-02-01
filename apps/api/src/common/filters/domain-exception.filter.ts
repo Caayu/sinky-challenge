@@ -1,10 +1,9 @@
 import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus, Logger } from '@nestjs/common'
 import { Response } from 'express'
-import { TaskTitleRequiredError, TaskAlreadyCompletedError, TaskNotFoundError } from '../../tasks/domain/errors'
-import { AiQuotaExceededError, AiGenerationError } from '../../ai/domain/errors'
+import { DomainErrorRegistry } from './domain-error.registry'
 import { ErrorResponseDto } from '../dto/error-response.dto'
 
-@Catch(TaskTitleRequiredError, TaskAlreadyCompletedError, TaskNotFoundError, AiQuotaExceededError, AiGenerationError)
+@Catch()
 export class DomainExceptionFilter implements ExceptionFilter {
   private readonly logger = new Logger(DomainExceptionFilter.name)
 
@@ -12,22 +11,13 @@ export class DomainExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp()
     const response = ctx.getResponse<Response>()
 
-    let status = HttpStatus.BAD_REQUEST
-    let errorType = 'Bad Request'
+    const mapping = DomainErrorRegistry.get(exception)
 
-    if (exception instanceof TaskNotFoundError) {
-      status = HttpStatus.NOT_FOUND
-      errorType = 'Not Found'
-    } else if (exception instanceof AiQuotaExceededError) {
-      status = HttpStatus.SERVICE_UNAVAILABLE
-      errorType = 'Service Unavailable'
-    } else if (exception instanceof AiGenerationError) {
-      status = HttpStatus.INTERNAL_SERVER_ERROR
-      errorType = 'Internal Server Error'
-    }
+    const status = mapping?.status ?? HttpStatus.INTERNAL_SERVER_ERROR
+    const errorType = mapping?.errorType ?? 'Internal Server Error'
 
     const message = exception.message
-    this.logger.warn(`Domain exception caught: ${message}`)
+    this.logger.warn(`Domain exception caught: ${message} (Status: ${status})`)
 
     response.status(status).json({
       statusCode: status,
