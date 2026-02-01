@@ -1,22 +1,24 @@
 import { fetchTasks } from '@/lib/api'
 import { TasksView } from '@/components/tasks-view'
-import { TaskResponse } from '@repo/shared'
+import { TaskResponse, PaginatedResponse } from '@repo/shared'
 
 // Force dynamic rendering since we are fetching data that changes often
 export const dynamic = 'force-dynamic'
 
-async function getInitialTasks(): Promise<TaskResponse[]> {
+async function getInitialTasks(): Promise<PaginatedResponse<TaskResponse>> {
   try {
-    const data = await fetchTasks()
-    return data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    return await fetchTasks()
   } catch (error) {
     console.error('Failed to fetch initial tasks:', error)
-    return []
+    return {
+      data: [],
+      meta: { total: 0, page: 1, limit: 10, totalPages: 0, hasNextPage: false, hasPreviousPage: false }
+    }
   }
 }
 
 export default async function Home() {
-  const initialTasks = await getInitialTasks()
+  const initialData = await getInitialTasks()
 
   return (
     <main className="min-h-screen bg-background p-4 md:p-8">
@@ -26,7 +28,7 @@ export default async function Home() {
           <p className="text-muted-foreground">Manage your tasks efficiently with AI power.</p>
         </header>
 
-        <TasksView initialTasks={initialTasks} />
+        <TasksView initialData={initialData} />
       </div>
     </main>
   )

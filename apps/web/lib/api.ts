@@ -1,10 +1,13 @@
-import { AiTaskResponse } from '@repo/shared'
-import { TaskResponse } from '@repo/shared'
+import { AiTaskResponse, TaskResponse, PaginatedResponse } from '@repo/shared'
 
 const API_URL = 'http://localhost:3000'
 
-export async function fetchTasks(): Promise<TaskResponse[]> {
-  const res = await fetch(`${API_URL}/tasks`)
+export async function fetchTasks(page = 1, limit = 10): Promise<PaginatedResponse<TaskResponse>> {
+  const searchParams = new URLSearchParams({
+    page: page.toString(),
+    limit: limit.toString()
+  })
+  const res = await fetch(`${API_URL}/tasks?${searchParams}`)
   if (!res.ok) throw new Error('Failed to fetch tasks')
   return res.json()
 }
