@@ -7,7 +7,7 @@ export const createTaskSchema = z.object({
 
   category: z.enum(['WORK', 'PERSONAL', 'HEALTH', 'FINANCE', 'SHOPPING']).optional().describe('Task category'),
 
-  priority: z.enum(['HIGH', 'MEDIUM', 'LOW']).optional().describe('Task priority'),
+  priority: z.enum(['HIGH', 'MEDIUM', 'LOW', 'CRITICAL']).optional().describe('Task priority'),
 
   suggestedDeadline: z.string().optional().nullable().describe('Suggested deadline (ISO Date)')
 })
