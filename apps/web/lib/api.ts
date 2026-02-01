@@ -12,6 +12,12 @@ export async function fetchTasks(page = 1, limit = 10): Promise<PaginatedRespons
   return res.json()
 }
 
+export async function getTask(id: string): Promise<TaskResponse> {
+  const res = await fetch(`${API_URL}/tasks/${id}`)
+  if (!res.ok) throw new Error('Failed to fetch task')
+  return res.json()
+}
+
 export async function createTask(data: any): Promise<TaskResponse> {
   const res = await fetch(`${API_URL}/tasks`, {
     method: 'POST',

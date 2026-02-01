@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { fetchTasks } from '@/lib/api'
 import { TaskResponse, PaginatedResponse } from '@repo/shared'
 import { TaskList } from '@/components/task-list'
@@ -15,6 +15,10 @@ export function TasksView({ initialData }: { initialData: PaginatedResponse<Task
   const [page, setPage] = useState(initialData.meta.page)
   const queryClient = useQueryClient()
   const limit = initialData.meta.limit
+
+  // Hydration fix: Tabs generate random IDs on server vs client in some versions
+  const [mounted, setMounted] = useState(false)
+  useEffect(() => setMounted(true), [])
 
   const { data, isFetching, refetch } = useQuery({
     queryKey: ['tasks', page, limit],
@@ -42,6 +46,44 @@ export function TasksView({ initialData }: { initialData: PaginatedResponse<Task
 
   const handlePrevPage = () => {
     if (meta.hasPreviousPage) setPage((old) => Math.max(old - 1, 1))
+  }
+
+  if (!mounted) {
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="md:col-span-1 space-y-6">
+          {/* Skeleton for Tabs during SSR to avoid mismatch */}
+          <div className="h-[300px] border rounded-lg bg-muted/10 animate-pulse" />
+        </div>
+
+        {/* Render TaskList immediately since it has initialData and no complex interactive state causing ID mismatch */}
+        <div className="md:col-span-2 space-y-4">
+          <div className="flex items-center justify-between">
+            <h2 className="text-xl font-semibold">Your Tasks ({meta.total})</h2>
+            <Button variant="ghost" size="sm" className="text-primary hover:underline gap-1" disabled>
+              Refresh
+            </Button>
+          </div>
+          <TaskList tasks={initialData.data} onRefresh={() => {}} />
+          {/* Pagination placeholder */}
+          <div className="flex items-center justify-between text-sm py-4">
+            <div className="text-muted-foreground">
+              Page {initialData.meta.page} of {initialData.meta.totalPages}
+            </div>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" disabled>
+                <ChevronLeft className="w-4 h-4 mr-1" />
+                Prev
+              </Button>
+              <Button variant="outline" size="sm" disabled>
+                Next
+                <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
