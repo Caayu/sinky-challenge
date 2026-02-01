@@ -4,6 +4,9 @@ export const taskResponseSchema = z.object({
   id: z.string().uuid().describe('The unique identifier of the task'),
   title: z.string().describe('The title of the task'),
   description: z.string().optional().describe('The detailed description of the task'),
+  category: z.string().optional().describe('The category of the task'),
+  priority: z.string().optional().describe('The priority of the task'),
+  suggestedDeadline: z.date().nullable().optional().describe('The suggested deadline of the task'),
   isCompleted: z.boolean().describe('Whether the task is completed'),
   createdAt: z.date().describe('The date and time when the task was created')
 })

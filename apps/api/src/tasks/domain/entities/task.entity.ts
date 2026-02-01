@@ -3,6 +3,9 @@ import { TaskAlreadyCompletedError, TaskTitleRequiredError } from '../errors'
 export type TaskProps = {
   title: string
   description?: string
+  category?: string
+  priority?: string
+  suggestedDeadline?: Date | null
   isCompleted: boolean
   createdAt: Date
   updatedAt: Date
@@ -17,7 +20,13 @@ export class Task {
     this._id = id ?? crypto.randomUUID()
   }
 
-  public static create(title: string, description?: string): Task {
+  public static create(
+    title: string,
+    description?: string,
+    category?: string,
+    priority?: string,
+    suggestedDeadline?: string | null
+  ): Task {
     if (!title) {
       throw new TaskTitleRequiredError()
     }
@@ -25,6 +34,9 @@ export class Task {
     return new Task({
       title,
       description,
+      category,
+      priority,
+      suggestedDeadline: suggestedDeadline ? new Date(suggestedDeadline) : null,
       isCompleted: false,
       createdAt: new Date(),
       updatedAt: new Date()
@@ -54,6 +66,15 @@ export class Task {
     if (props.description !== undefined) {
       this.props.description = props.description
     }
+    if (props.category !== undefined) {
+      this.props.category = props.category
+    }
+    if (props.priority !== undefined) {
+      this.props.priority = props.priority
+    }
+    if (props.suggestedDeadline !== undefined) {
+      this.props.suggestedDeadline = props.suggestedDeadline ? new Date(props.suggestedDeadline) : null
+    }
     if (props.isCompleted !== undefined) {
       this.props.isCompleted = props.isCompleted
     }
@@ -70,6 +91,18 @@ export class Task {
 
   get description(): string | undefined {
     return this.props.description
+  }
+
+  get category(): string | undefined {
+    return this.props.category
+  }
+
+  get priority(): string | undefined {
+    return this.props.priority
+  }
+
+  get suggestedDeadline(): Date | null | undefined {
+    return this.props.suggestedDeadline
   }
 
   get isCompleted(): boolean {

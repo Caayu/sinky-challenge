@@ -6,6 +6,9 @@ export class TaskPresenter {
       id: task.id,
       title: task.title,
       description: task.description,
+      category: task.category,
+      priority: task.priority,
+      suggestedDeadline: task.suggestedDeadline,
       isCompleted: task.isCompleted,
       createdAt: task.createdAt
     }

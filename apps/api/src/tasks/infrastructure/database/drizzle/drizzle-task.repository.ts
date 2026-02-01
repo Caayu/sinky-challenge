@@ -16,6 +16,9 @@ export class DrizzleTaskRepository implements TaskRepository {
       id: task.id,
       title: task.title,
       description: task.description,
+      category: task.category,
+      priority: task.priority,
+      limitDate: task.suggestedDeadline,
       isCompleted: task.isCompleted,
       createdAt: task.createdAt,
       updatedAt: task.updatedAt
@@ -32,6 +35,9 @@ export class DrizzleTaskRepository implements TaskRepository {
     return Task.restore(result.id, {
       title: result.title,
       description: result.description ?? undefined,
+      category: result.category ?? undefined,
+      priority: result.priority ?? undefined,
+      suggestedDeadline: result.limitDate ?? null,
       isCompleted: result.isCompleted,
       createdAt: result.createdAt,
       updatedAt: result.updatedAt
@@ -45,6 +51,9 @@ export class DrizzleTaskRepository implements TaskRepository {
       Task.restore(result.id, {
         title: result.title,
         description: result.description ?? undefined,
+        category: result.category ?? undefined,
+        priority: result.priority ?? undefined,
+        suggestedDeadline: result.limitDate ?? null,
         isCompleted: result.isCompleted,
         createdAt: result.createdAt,
         updatedAt: result.updatedAt
@@ -58,6 +67,9 @@ export class DrizzleTaskRepository implements TaskRepository {
       .set({
         title: task.title,
         description: task.description,
+        category: task.category,
+        priority: task.priority,
+        limitDate: task.suggestedDeadline,
         isCompleted: task.isCompleted,
         updatedAt: task.updatedAt
       })

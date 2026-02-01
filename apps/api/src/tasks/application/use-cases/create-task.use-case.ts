@@ -11,7 +11,7 @@ export class CreateTaskUseCase {
   ) {}
 
   async execute(dto: CreateTaskDto): Promise<Task> {
-    const task = Task.create(dto.title, dto.description)
+    const task = Task.create(dto.title, dto.description, dto.category, dto.priority, dto.suggestedDeadline)
     await this.taskRepository.create(task)
     return task
   }

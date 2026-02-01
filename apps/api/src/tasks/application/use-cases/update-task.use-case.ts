@@ -18,7 +18,11 @@ export class UpdateTaskUseCase {
       throw new TaskNotFoundError(id)
     }
 
-    task.update(dto)
+    task.update({
+      ...dto,
+      suggestedDeadline:
+        typeof dto.suggestedDeadline === 'string' ? new Date(dto.suggestedDeadline) : dto.suggestedDeadline
+    })
 
     await this.taskRepository.update(task)
 
