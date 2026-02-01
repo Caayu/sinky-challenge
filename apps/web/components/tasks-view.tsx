@@ -10,6 +10,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query'
+import { ThemeToggle } from '@/components/theme-toggle'
 
 export function TasksView({ initialData }: { initialData: PaginatedResponse<TaskResponse> }) {
   const [page, setPage] = useState(initialData.meta.page)
@@ -108,16 +109,19 @@ export function TasksView({ initialData }: { initialData: PaginatedResponse<Task
       <div className="md:col-span-2 space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold">Your Tasks ({meta.total})</h2>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => refetch()}
-            className="text-primary hover:underline gap-1"
-            disabled={isFetching}
-          >
-            {isFetching && <Loader2 className="w-3 h-3 animate-spin" />}
-            Refresh
-          </Button>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => refetch()}
+              className="text-primary hover:underline gap-1"
+              disabled={isFetching}
+            >
+              {isFetching && <Loader2 className="w-3 h-3 animate-spin" />}
+              Refresh
+            </Button>
+          </div>
         </div>
 
         <TaskList tasks={tasks} onRefresh={() => queryClient.invalidateQueries({ queryKey: ['tasks'] })} />

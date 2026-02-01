@@ -69,8 +69,12 @@ export function TaskList({ tasks, onRefresh }: { tasks: TaskResponse[]; onRefres
   return (
     <>
       <div className="space-y-3">
-        {tasks.map((task) => (
-          <Card key={task.id} className="overflow-hidden">
+        {tasks.map((task, index) => (
+          <Card
+            key={task.id}
+            className="overflow-hidden transition-all duration-300 hover:shadow-md hover:border-primary/50 animate-in fade-in slide-in-from-bottom-4"
+            style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'both' }}
+          >
             <CardContent className="p-4 flex items-center gap-3">
               <Checkbox checked={task.isCompleted} onCheckedChange={() => toggleTask(task)} />
 
