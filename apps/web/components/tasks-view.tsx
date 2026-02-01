@@ -10,7 +10,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
 import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
 import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query'
-import { ThemeToggle } from '@/components/theme-toggle'
 
 export function TasksView({ initialData }: { initialData: PaginatedResponse<TaskResponse> }) {
   const [page, setPage] = useState(initialData.meta.page)
@@ -110,7 +109,6 @@ export function TasksView({ initialData }: { initialData: PaginatedResponse<Task
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold">Your Tasks ({meta.total})</h2>
           <div className="flex items-center gap-2">
-            <ThemeToggle />
             <Button
               variant="ghost"
               size="sm"

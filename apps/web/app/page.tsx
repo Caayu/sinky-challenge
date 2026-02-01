@@ -24,7 +24,7 @@ export default async function Home() {
     <main className="min-h-screen bg-background p-4 md:p-8">
       <div className="max-w-6xl mx-auto space-y-8">
         <header>
-          <h1 className="text-3xl font-bold tracking-tight">Sinky Challenge</h1>
+          <h1 className="text-3xl font-bold tracking-tight">Magic Tasks</h1>
           <p className="text-muted-foreground">Manage your tasks efficiently with AI power.</p>
         </header>
 

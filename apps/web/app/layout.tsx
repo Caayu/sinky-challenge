@@ -3,6 +3,7 @@ import localFont from 'next/font/local'
 import './globals.css'
 import { Toaster } from '@/components/ui/sonner'
 import { Providers } from '@/components/providers'
+import { Header } from '@/components/header'
 
 const geistSans = localFont({
   src: './fonts/GeistVF.woff',
@@ -27,7 +28,10 @@ export default function RootLayout({
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable}`}>
         <Providers>
-          {children}
+          <div className="relative flex min-h-screen flex-col">
+            <Header />
+            <main className="flex-1 container mx-auto p-4 md:p-8">{children}</main>
+          </div>
           <Toaster richColors position="top-right" />
         </Providers>
       </body>
