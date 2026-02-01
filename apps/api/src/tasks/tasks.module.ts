@@ -6,6 +6,7 @@ import { GetTaskUseCase } from './application/use-cases/get-task.use-case'
 import { ListTasksUseCase } from './application/use-cases/list-tasks.use-case'
 import { UpdateTaskUseCase } from './application/use-cases/update-task.use-case'
 import { DeleteTaskUseCase } from './application/use-cases/delete-task.use-case'
+import { CompleteTaskUseCase } from './application/use-cases/complete-task.use-case'
 import { TasksController } from './presentation/controllers/tasks.controller'
 import { DomainErrorRegistry } from '../common/filters/domain-error.registry'
 import { TaskTitleRequiredError, TaskAlreadyCompletedError, TaskNotFoundError } from './domain/errors'
@@ -22,7 +23,8 @@ import { TaskTitleRequiredError, TaskAlreadyCompletedError, TaskNotFoundError } 
     GetTaskUseCase,
     ListTasksUseCase,
     UpdateTaskUseCase,
-    DeleteTaskUseCase
+    DeleteTaskUseCase,
+    CompleteTaskUseCase
   ],
   exports: [CreateTaskUseCase]
 })

@@ -8,6 +8,7 @@ import { GetTaskUseCase } from '../../application/use-cases/get-task.use-case'
 import { ListTasksUseCase } from '../../application/use-cases/list-tasks.use-case'
 import { UpdateTaskUseCase } from '../../application/use-cases/update-task.use-case'
 import { DeleteTaskUseCase } from '../../application/use-cases/delete-task.use-case'
+import { CompleteTaskUseCase } from '../../application/use-cases/complete-task.use-case'
 import { UpdateTaskDto } from '../../application/dto/update-task.dto'
 import { HttpCode, Param, Patch, Get, Delete } from '@nestjs/common'
 import { ErrorResponseDto } from '../../../common/dto/error-response.dto'
@@ -20,7 +21,8 @@ export class TasksController {
     private readonly getTaskUseCase: GetTaskUseCase,
     private readonly listTasksUseCase: ListTasksUseCase,
     private readonly updateTaskUseCase: UpdateTaskUseCase,
-    private readonly deleteTaskUseCase: DeleteTaskUseCase
+    private readonly deleteTaskUseCase: DeleteTaskUseCase,
+    private readonly completeTaskUseCase: CompleteTaskUseCase
   ) {}
 
   @Post()
@@ -47,6 +49,16 @@ export class TasksController {
   @ApiResponse({ status: 404, description: 'Task not found', type: ErrorResponseDto })
   async findOne(@Param('id') id: string) {
     const task = await this.getTaskUseCase.execute(id)
+    return TaskPresenter.toResponse(task)
+  }
+
+  @Patch(':id/complete')
+  @ApiOperation({ summary: 'Complete a task' })
+  @ApiResponse({ status: 200, description: 'The task has been successfully completed.', type: TaskResponseDto })
+  @ApiResponse({ status: 404, description: 'Task not found', type: ErrorResponseDto })
+  @ApiResponse({ status: 409, description: 'Conflict - Task already completed', type: ErrorResponseDto })
+  async complete(@Param('id') id: string) {
+    const task = await this.completeTaskUseCase.execute(id)
     return TaskPresenter.toResponse(task)
   }
 
