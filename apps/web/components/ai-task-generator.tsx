@@ -11,17 +11,38 @@ import { enhanceTask, generateSubtasks } from '@/lib/api'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
 
+import { useMutation } from '@tanstack/react-query'
+
 export function AiTaskGenerator({ onTaskCreated }: { onTaskCreated: () => void }) {
   const [prompt, setPrompt] = useState('')
   const [apiKey, setApiKey] = useState('')
   const [isSubtasks, setIsSubtasks] = useState(false)
-  const [loading, setLoading] = useState(false)
   const [progress, setProgress] = useState(0)
+
+  const { mutate, isPending } = useMutation({
+    mutationFn: async () => {
+      if (isSubtasks) {
+        return generateSubtasks(prompt)
+      } else {
+        return enhanceTask(prompt)
+      }
+    },
+    onSuccess: () => {
+      setProgress(100)
+      setPrompt('')
+      onTaskCreated()
+      toast.success('Generated successfully! 🤖')
+    },
+    onError: (error) => {
+      console.error(error)
+      toast.error('Failed to generate task(s)')
+    }
+  })
 
   // Simulate progress when loading
   useEffect(() => {
     let interval: NodeJS.Timeout
-    if (loading) {
+    if (isPending) {
       setProgress(10)
       interval = setInterval(() => {
         setProgress((prev) => {
@@ -30,33 +51,14 @@ export function AiTaskGenerator({ onTaskCreated }: { onTaskCreated: () => void }
         })
       }, 500)
     } else {
-      setProgress(0)
+      if (progress !== 100) setProgress(0) // Reset if not success (or handle success differently)
     }
     return () => clearInterval(interval)
-  }, [loading])
+  }, [isPending])
 
-  const handleGenerate = async () => {
+  const handleGenerate = () => {
     if (!prompt) return
-
-    setLoading(true)
-    try {
-      if (isSubtasks) {
-        await generateSubtasks(prompt)
-      } else {
-        await enhanceTask(prompt)
-      }
-
-      setProgress(100)
-      setPrompt('')
-      onTaskCreated()
-      toast.success('Generated successfully! 🤖')
-    } catch (error) {
-      console.error(error)
-      toast.error('Failed to generate task(s)')
-    } finally {
-      // Small delay to show 100%
-      setTimeout(() => setLoading(false), 500)
-    }
+    mutate()
   }
 
   return (
@@ -91,7 +93,7 @@ export function AiTaskGenerator({ onTaskCreated }: { onTaskCreated: () => void }
         <Label htmlFor="subtasks">Break down into subtasks</Label>
       </div>
 
-      {loading && (
+      {isPending && (
         <div className="space-y-1">
           <Progress value={progress} className="h-2" />
           <p className="text-xs text-center text-muted-foreground">
@@ -100,8 +102,8 @@ export function AiTaskGenerator({ onTaskCreated }: { onTaskCreated: () => void }
         </div>
       )}
 
-      <Button onClick={handleGenerate} className="w-full" disabled={loading || !prompt}>
-        {loading ? (
+      <Button onClick={handleGenerate} className="w-full" disabled={isPending || !prompt}>
+        {isPending ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
             Generating...

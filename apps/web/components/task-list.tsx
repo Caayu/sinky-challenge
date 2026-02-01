@@ -1,3 +1,5 @@
+'use client'
+
 import { useState } from 'react'
 import { TaskResponse } from '@repo/shared'
 import { Checkbox } from '@/components/ui/checkbox'
@@ -34,38 +36,45 @@ const categoryColors: Record<string, string> = {
   FINANCE: 'bg-emerald-100 text-emerald-800'
 }
 
+import { useMutation } from '@tanstack/react-query'
+
 export function TaskList({ tasks, onRefresh }: { tasks: TaskResponse[]; onRefresh: () => void }) {
   const [deleteId, setDeleteId] = useState<string | null>(null)
 
-  const handleToggle = async (task: TaskResponse) => {
-    try {
+  const { mutate: toggleTask } = useMutation({
+    mutationFn: async (task: TaskResponse) => {
       if (!task.isCompleted) {
-        await completeTask(task.id)
+        return completeTask(task.id)
+      } else {
+        return updateTask(task.id, { isCompleted: false })
+      }
+    },
+    onSuccess: (data, variables) => {
+      if (!variables.isCompleted) {
         toast.success('Task completed! 🎉')
       } else {
-        await updateTask(task.id, { isCompleted: false })
         toast.info('Task unmarked')
       }
       onRefresh()
-    } catch (e) {
-      console.error(e)
+    },
+    onError: (error) => {
+      console.error(error)
       toast.error('Failed to update task')
     }
-  }
+  })
 
-  const confirmDelete = async () => {
-    if (!deleteId) return
-    try {
-      await deleteTask(deleteId)
+  const { mutate: confirmDelete } = useMutation({
+    mutationFn: async (id: string) => deleteTask(id),
+    onSuccess: () => {
       toast.error('Task deleted')
       onRefresh()
-    } catch (e) {
-      console.error(e)
-      toast.error('Failed to delete task')
-    } finally {
       setDeleteId(null)
+    },
+    onError: (error) => {
+      console.error(error)
+      toast.error('Failed to delete task')
     }
-  }
+  })
 
   if (tasks.length === 0) {
     return <div className="text-center text-muted-foreground py-8">No tasks yet. Create one!</div>
@@ -77,7 +86,7 @@ export function TaskList({ tasks, onRefresh }: { tasks: TaskResponse[]; onRefres
         {tasks.map((task) => (
           <Card key={task.id} className="overflow-hidden">
             <CardContent className="p-4 flex items-center gap-3">
-              <Checkbox checked={task.isCompleted} onCheckedChange={() => handleToggle(task)} />
+              <Checkbox checked={task.isCompleted} onCheckedChange={() => toggleTask(task)} />
 
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
@@ -134,7 +143,7 @@ export function TaskList({ tasks, onRefresh }: { tasks: TaskResponse[]; onRefres
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={confirmDelete}
+              onClick={() => deleteId && confirmDelete(deleteId)}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
               Delete

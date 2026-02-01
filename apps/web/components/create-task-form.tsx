@@ -9,27 +9,18 @@ import { Label } from '@/components/ui/label'
 import { createTask } from '@/lib/api'
 import { toast } from 'sonner'
 
+import { useMutation } from '@tanstack/react-query'
+
 export function CreateTaskForm({ onTaskCreated }: { onTaskCreated: () => void }) {
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [category, setCategory] = useState<string | undefined>('WORK')
   const [priority, setPriority] = useState<string | undefined>('MEDIUM')
   const [deadline, setDeadline] = useState('')
-  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!title) return
-
-    setLoading(true)
-    try {
-      await createTask({
-        title,
-        description,
-        category,
-        priority,
-        suggestedDeadline: deadline || null
-      })
+  const { mutate, isPending } = useMutation({
+    mutationFn: createTask,
+    onSuccess: () => {
       setTitle('')
       setDescription('')
       setCategory('WORK')
@@ -37,12 +28,24 @@ export function CreateTaskForm({ onTaskCreated }: { onTaskCreated: () => void })
       setDeadline('')
       onTaskCreated()
       toast.success('Task created successfully')
-    } catch (error) {
+    },
+    onError: (error) => {
       console.error(error)
       toast.error('Failed to create task')
-    } finally {
-      setLoading(false)
     }
+  })
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!title) return
+
+    mutate({
+      title,
+      description,
+      category,
+      priority,
+      suggestedDeadline: deadline || null
+    })
   }
 
   return (
@@ -106,8 +109,8 @@ export function CreateTaskForm({ onTaskCreated }: { onTaskCreated: () => void })
         <Input id="deadline" type="datetime-local" value={deadline} onChange={(e) => setDeadline(e.target.value)} />
       </div>
 
-      <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? 'Creating...' : 'Create Task'}
+      <Button type="submit" className="w-full" disabled={isPending}>
+        {isPending ? 'Creating...' : 'Create Task'}
       </Button>
     </form>
   )
