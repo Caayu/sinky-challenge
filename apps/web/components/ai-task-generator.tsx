@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Progress } from '@/components/ui/progress'
 import { enhanceTask, generateSubtasks } from '@/lib/api'
+import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
 
 export function AiTaskGenerator({ onTaskCreated }: { onTaskCreated: () => void }) {
@@ -48,9 +49,10 @@ export function AiTaskGenerator({ onTaskCreated }: { onTaskCreated: () => void }
       setProgress(100)
       setPrompt('')
       onTaskCreated()
+      toast.success('Generated successfully! 🤖')
     } catch (error) {
       console.error(error)
-      alert('Failed to generate task(s)')
+      toast.error('Failed to generate task(s)')
     } finally {
       // Small delay to show 100%
       setTimeout(() => setLoading(false), 500)

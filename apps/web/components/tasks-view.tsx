@@ -8,6 +8,7 @@ import { CreateTaskForm } from '@/components/create-task-form'
 import { AiTaskGenerator } from '@/components/ai-task-generator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Loader2 } from 'lucide-react'
+import { toast } from 'sonner'
 
 export function TasksView({ initialTasks }: { initialTasks: TaskResponse[] }) {
   const [tasks, setTasks] = useState<TaskResponse[]>(initialTasks)
@@ -22,7 +23,7 @@ export function TasksView({ initialTasks }: { initialTasks: TaskResponse[] }) {
       setTasks(data.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()))
     } catch (error) {
       console.error(error)
-      alert('Failed to refresh tasks')
+      toast.error('Failed to refresh tasks')
     } finally {
       setLoading(false)
     }

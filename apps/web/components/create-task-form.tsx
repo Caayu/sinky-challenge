@@ -7,6 +7,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { createTask } from '@/lib/api'
+import { toast } from 'sonner'
 
 export function CreateTaskForm({ onTaskCreated }: { onTaskCreated: () => void }) {
   const [title, setTitle] = useState('')
@@ -35,9 +36,10 @@ export function CreateTaskForm({ onTaskCreated }: { onTaskCreated: () => void })
       setPriority('MEDIUM')
       setDeadline('')
       onTaskCreated()
+      toast.success('Task created successfully')
     } catch (error) {
       console.error(error)
-      alert('Failed to create task')
+      toast.error('Failed to create task')
     } finally {
       setLoading(false)
     }
