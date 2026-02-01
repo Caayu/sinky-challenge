@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common'
 import { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
-import { eq } from 'drizzle-orm'
+import { eq, count } from 'drizzle-orm'
 import { TaskRepository } from '../../../domain/repositories/task.repository'
 import { Task } from '../../../domain/entities/task.entity'
 import { DRIZZLE_DB } from '../../../../database/database.provider'
@@ -44,10 +44,15 @@ export class DrizzleTaskRepository implements TaskRepository {
     })
   }
 
-  async findAll(): Promise<Task[]> {
-    const results = await this.db.select().from(tasks).all()
+  async findAll({ page, limit }: { page: number; limit: number }): Promise<{ items: Task[]; total: number }> {
+    const offset = (page - 1) * limit
 
-    return results.map((result) =>
+    const [results, totalCount] = await Promise.all([
+      this.db.select().from(tasks).limit(limit).offset(offset).orderBy(tasks.createdAt).all(), // orderBy creates consistent pagination
+      this.db.select({ count: count() }).from(tasks).get()
+    ])
+
+    const items = results.map((result) =>
       Task.restore(result.id, {
         title: result.title,
         description: result.description ?? undefined,
@@ -59,6 +64,11 @@ export class DrizzleTaskRepository implements TaskRepository {
         updatedAt: result.updatedAt
       })
     )
+
+    return {
+      items,
+      total: totalCount?.count ?? 0
+    }
   }
 
   async update(task: Task): Promise<void> {

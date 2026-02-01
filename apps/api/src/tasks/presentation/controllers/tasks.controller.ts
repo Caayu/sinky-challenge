@@ -10,8 +10,9 @@ import { UpdateTaskUseCase } from '../../application/use-cases/update-task.use-c
 import { DeleteTaskUseCase } from '../../application/use-cases/delete-task.use-case'
 import { CompleteTaskUseCase } from '../../application/use-cases/complete-task.use-case'
 import { UpdateTaskDto } from '../../application/dto/update-task.dto'
-import { HttpCode, Param, Patch, Get, Delete } from '@nestjs/common'
+import { HttpCode, Param, Patch, Get, Delete, Query } from '@nestjs/common'
 import { ErrorResponseDto } from '../../../common/dto/error-response.dto'
+import { ListTasksQueryDto } from '../../application/dto/list-tasks.dto'
 
 @ApiTags('tasks')
 @Controller('tasks')
@@ -38,9 +39,13 @@ export class TasksController {
   @Get()
   @ApiOperation({ summary: 'List all tasks' })
   @ApiResponse({ status: 200, description: 'Return all tasks.', type: [TaskResponseDto] })
-  async findAll() {
-    const tasks = await this.listTasksUseCase.execute()
-    return tasks.map(TaskPresenter.toResponse)
+  // TODO: Update ApiResponse type to reflect pagination structure
+  async findAll(@Query() query: ListTasksQueryDto) {
+    const result = await this.listTasksUseCase.execute(query)
+    return {
+      data: result.data.map(TaskPresenter.toResponse),
+      meta: result.meta
+    }
   }
 
   @Get(':id')
