@@ -1,5 +1,7 @@
 'use client'
 
+import { motion, AnimatePresence } from 'framer-motion'
+
 import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { Textarea } from '@/components/ui/textarea'
@@ -66,7 +68,11 @@ export function AiTaskGenerator({ onTaskCreated }: { onTaskCreated: () => void }
   }
 
   return (
-    <div className="space-y-4 p-4 border rounded-lg bg-card text-card-foreground">
+    <motion.div
+      initial={{ opacity: 0, scale: 0.95 }}
+      animate={{ opacity: 1, scale: 1 }}
+      className="space-y-4 p-4 border rounded-lg bg-card text-card-foreground shadow-sm"
+    >
       <div className="space-y-2">
         <div className="flex items-center gap-2">
           <Label htmlFor="apiKey">{t('apiKeyLabel')}</Label>
@@ -118,25 +124,34 @@ export function AiTaskGenerator({ onTaskCreated }: { onTaskCreated: () => void }
         <Label htmlFor="subtasks">{t('subtasksLabel')}</Label>
       </div>
 
-      {isPending && (
-        <div className="space-y-1">
-          <Progress value={progress} className="h-2" />
-          <p className="text-xs text-center text-muted-foreground">
-            {progress >= 90 ? t('finalizing') : t('thinking')}
-          </p>
-        </div>
-      )}
-
-      <Button onClick={handleGenerate} className="w-full" disabled={isPending || !prompt || !apiKey}>
-        {isPending ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            {t('generating')}
-          </>
-        ) : (
-          t('magicButton')
+      <AnimatePresence>
+        {isPending && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            className="space-y-1 overflow-hidden"
+          >
+            <Progress value={progress} className="h-2" />
+            <p className="text-xs text-center text-muted-foreground">
+              {progress >= 90 ? t('finalizing') : t('thinking')}
+            </p>
+          </motion.div>
         )}
-      </Button>
-    </div>
+      </AnimatePresence>
+
+      <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+        <Button onClick={handleGenerate} className="w-full" disabled={isPending || !prompt || !apiKey}>
+          {isPending ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              {t('generating')}
+            </>
+          ) : (
+            t('magicButton')
+          )}
+        </Button>
+      </motion.div>
+    </motion.div>
   )
 }

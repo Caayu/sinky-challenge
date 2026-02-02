@@ -1,5 +1,7 @@
 'use client'
 
+import { motion } from 'framer-motion'
+
 import { useState, useEffect } from 'react'
 import { fetchTasks } from '@/lib/api'
 import { TaskResponse, PaginatedResponse, TaskCategory, TaskPriority } from '@repo/shared'
@@ -92,7 +94,12 @@ export function TasksView({ initialData }: { initialData: PaginatedResponse<Task
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+      className="grid grid-cols-1 md:grid-cols-3 gap-8"
+    >
       <div className="md:col-span-1 space-y-6">
         <Tabs defaultValue="ai" className="w-full">
           <TabsList className="grid w-full grid-cols-2">
@@ -209,6 +216,6 @@ export function TasksView({ initialData }: { initialData: PaginatedResponse<Task
           </div>
         </div>
       </div>
-    </div>
+    </motion.div>
   )
 }

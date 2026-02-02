@@ -20,6 +20,7 @@ import {
   Tag,
   AlertTriangle
 } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
@@ -106,7 +107,11 @@ export default function TaskPage() {
   }
 
   return (
-    <div className="container max-w-3xl mx-auto py-8 space-y-6">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="container max-w-3xl mx-auto py-8 space-y-6"
+    >
       <div className="flex items-center justify-between">
         <Button variant="ghost" onClick={() => router.back()} className="gap-2 shrink-0">
           <ArrowLeft className="w-4 h-4" /> {t('back')}
@@ -152,119 +157,136 @@ export default function TaskPage() {
       </div>
 
       {/* Edit Mode */}
-      {isEditing ? (
-        <Card>
-          <CardHeader>
-            <CardTitle>{t('edit')}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <TaskForm
-              initialData={task}
-              onSubmit={(data) => doUpdate(data)}
-              isPending={isUpdating}
-              submitLabel={t('saveChanges')}
-            />
-          </CardContent>
-        </Card>
-      ) : (
-        /* View Mode */
-        <div className="space-y-6">
-          <div className="flex flex-col md:flex-row gap-4 md:items-start justify-between">
-            <div className="space-y-2">
-              <h1 className={`text-3xl font-bold ${task.isCompleted ? 'line-through text-muted-foreground' : ''}`}>
-                {task.title}
-              </h1>
-              <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
-                <span className="flex items-center gap-1">
-                  <Clock className="w-3 h-3" /> {t('created')}{' '}
-                  {format.dateTime(new Date(task.createdAt), { dateStyle: 'medium' })}
-                </span>
-              </div>
-            </div>
-
-            <Button
-              variant={task.isCompleted ? 'secondary' : 'default'}
-              className="gap-2 min-w-[140px]"
-              onClick={() => toggleComplete(task)}
-            >
-              {task.isCompleted ? (
-                <>
-                  <CheckCircle2 className="w-4 h-4 text-green-500" /> {t('completed')}
-                </>
-              ) : (
-                <>
-                  <Circle className="w-4 h-4" /> {t('markComplete')}
-                </>
-              )}
-            </Button>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <Card className="md:col-span-2">
+      <AnimatePresence mode="wait">
+        {isEditing ? (
+          <motion.div
+            key="edit-mode"
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Card>
               <CardHeader>
-                <CardTitle className="text-lg">{t('description')}</CardTitle>
+                <CardTitle>{t('edit')}</CardTitle>
               </CardHeader>
               <CardContent>
-                {task.description ? (
-                  <p className="whitespace-pre-wrap leading-relaxed text-muted-foreground">{task.description}</p>
-                ) : (
-                  <p className="italic text-muted-foreground/50">{t('noDescription')}</p>
-                )}
+                <TaskForm
+                  initialData={task}
+                  onSubmit={(data) => doUpdate(data)}
+                  isPending={isUpdating}
+                  submitLabel={t('saveChanges')}
+                />
               </CardContent>
             </Card>
+          </motion.div>
+        ) : (
+          /* View Mode */
+          <motion.div
+            key="view-mode"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2 }}
+            className="space-y-6"
+          >
+            <div className="flex flex-col md:flex-row gap-4 md:items-start justify-between">
+              <div className="space-y-2">
+                <h1 className={`text-3xl font-bold ${task.isCompleted ? 'line-through text-muted-foreground' : ''}`}>
+                  {task.title}
+                </h1>
+                <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
+                  <span className="flex items-center gap-1">
+                    <Clock className="w-3 h-3" /> {t('created')}{' '}
+                    {format.dateTime(new Date(task.createdAt), { dateStyle: 'medium' })}
+                  </span>
+                </div>
+              </div>
 
-            <div className="space-y-6">
-              <Card>
-                <CardHeader className="pb-2">
-                  <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
-                    {t('details')}
-                  </CardTitle>
+              <Button
+                variant={task.isCompleted ? 'secondary' : 'default'}
+                className="gap-2 min-w-[140px]"
+                onClick={() => toggleComplete(task)}
+              >
+                {task.isCompleted ? (
+                  <>
+                    <CheckCircle2 className="w-4 h-4 text-green-500" /> {t('completed')}
+                  </>
+                ) : (
+                  <>
+                    <Circle className="w-4 h-4" /> {t('markComplete')}
+                  </>
+                )}
+              </Button>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card className="md:col-span-2">
+                <CardHeader>
+                  <CardTitle className="text-lg">{t('description')}</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div>
-                    <h3 className="text-xs font-semibold mb-1 flex items-center gap-2">
-                      <BriefcaseIcon category={task.category} /> {t('category')}
-                    </h3>
-                    <Badge
-                      variant="secondary"
-                      className={`${task.category ? categoryColors[task.category] : ''} border-0`}
-                    >
-                      {task.category ? tEnums(`Category.${task.category}`) : 'None'}
-                    </Badge>
-                  </div>
-
-                  <div>
-                    <h3 className="text-xs font-semibold mb-1 flex items-center gap-2">
-                      <AlertTriangle className="w-3 h-3" /> {t('priority')}
-                    </h3>
-                    <Badge
-                      variant="secondary"
-                      className={`${task.priority ? priorityColors[task.priority] : ''} border-0`}
-                    >
-                      {task.priority ? tEnums(`Priority.${task.priority}`) : 'None'}
-                    </Badge>
-                  </div>
-
-                  {task.suggestedDeadline && (
-                    <div>
-                      <h3 className="text-xs font-semibold mb-1 flex items-center gap-2">
-                        <Calendar className="w-3 h-3" /> {t('deadline')}
-                      </h3>
-                      <p className="text-sm font-medium">
-                        {format.dateTime(new Date(task.suggestedDeadline), { dateStyle: 'medium' })}
-                        <span className="block text-xs text-muted-foreground font-normal">
-                          {format.dateTime(new Date(task.suggestedDeadline), { timeStyle: 'short' })}
-                        </span>
-                      </p>
-                    </div>
+                <CardContent>
+                  {task.description ? (
+                    <p className="whitespace-pre-wrap leading-relaxed text-muted-foreground">{task.description}</p>
+                  ) : (
+                    <p className="italic text-muted-foreground/50">{t('noDescription')}</p>
                   )}
                 </CardContent>
               </Card>
+
+              <div className="space-y-6">
+                <Card>
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
+                      {t('details')}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <h3 className="text-xs font-semibold mb-1 flex items-center gap-2">
+                        <BriefcaseIcon category={task.category} /> {t('category')}
+                      </h3>
+                      <Badge
+                        variant="secondary"
+                        className={`${task.category ? categoryColors[task.category] : ''} border-0`}
+                      >
+                        {task.category ? tEnums(`Category.${task.category}`) : 'None'}
+                      </Badge>
+                    </div>
+
+                    <div>
+                      <h3 className="text-xs font-semibold mb-1 flex items-center gap-2">
+                        <AlertTriangle className="w-3 h-3" /> {t('priority')}
+                      </h3>
+                      <Badge
+                        variant="secondary"
+                        className={`${task.priority ? priorityColors[task.priority] : ''} border-0`}
+                      >
+                        {task.priority ? tEnums(`Priority.${task.priority}`) : 'None'}
+                      </Badge>
+                    </div>
+
+                    {task.suggestedDeadline && (
+                      <div>
+                        <h3 className="text-xs font-semibold mb-1 flex items-center gap-2">
+                          <Calendar className="w-3 h-3" /> {t('deadline')}
+                        </h3>
+                        <p className="text-sm font-medium">
+                          {format.dateTime(new Date(task.suggestedDeadline), { dateStyle: 'medium' })}
+                          <span className="block text-xs text-muted-foreground font-normal">
+                            {format.dateTime(new Date(task.suggestedDeadline), { timeStyle: 'short' })}
+                          </span>
+                        </p>
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
             </div>
-          </div>
-        </div>
-      )}
-    </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
   )
 }
 

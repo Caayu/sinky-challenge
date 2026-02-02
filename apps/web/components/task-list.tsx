@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { TaskResponse } from '@repo/shared'
 import { completeTask, deleteTask, updateTask } from '@/lib/api'
 import { toast } from 'sonner'
@@ -62,11 +63,20 @@ export function TaskList({ tasks, onRefresh }: { tasks: TaskResponse[]; onRefres
 
   return (
     <>
-      <div className="space-y-3">
-        {tasks.map((task, index) => (
-          <TaskCard key={task.id} task={task} index={index} onToggle={toggleTask} onDelete={setDeleteId} />
-        ))}
-      </div>
+      <motion.div
+        className="space-y-3"
+        initial="hidden"
+        animate="visible"
+        variants={{
+          visible: { transition: { staggerChildren: 0.05 } }
+        }}
+      >
+        <AnimatePresence mode="popLayout">
+          {tasks.map((task) => (
+            <TaskCard key={task.id} task={task} onToggle={toggleTask} onDelete={setDeleteId} />
+          ))}
+        </AnimatePresence>
+      </motion.div>
 
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent>
