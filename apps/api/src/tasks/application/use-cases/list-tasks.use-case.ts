@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common'
 import { TaskRepository } from '../../domain/repositories/task.repository'
 import { Task } from '../../domain/entities/task.entity'
-
-import { PaginationQuery, PaginatedResponse } from '@repo/shared'
+import { PaginatedResponse } from '@repo/shared'
+import { ListTasksQueryDto } from '../dto/list-tasks.dto'
 
 @Injectable()
 export class ListTasksUseCase {
@@ -11,9 +11,18 @@ export class ListTasksUseCase {
     private readonly taskRepository: TaskRepository
   ) {}
 
-  async execute(params: PaginationQuery): Promise<PaginatedResponse<Task>> {
-    const { page, limit } = params
-    const { items, total } = await this.taskRepository.findAll({ page, limit })
+  async execute(query: ListTasksQueryDto): Promise<PaginatedResponse<Task>> {
+    const page = query.page || 1
+    const limit = query.limit || 10
+
+    const { items, total } = await this.taskRepository.findAll({
+      page,
+      limit,
+      search: query.search,
+      isCompleted: query.status === 'DONE' ? true : query.status === 'PENDING' ? false : undefined,
+      priority: query.priority,
+      category: query.category
+    })
 
     return {
       data: items,

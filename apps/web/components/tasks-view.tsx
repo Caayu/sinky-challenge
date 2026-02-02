@@ -7,8 +7,10 @@ import { TaskList } from '@/components/task-list'
 import { CreateTaskForm } from '@/components/create-task-form'
 import { AiTaskGenerator } from '@/components/ai-task-generator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { Input } from '@/components/ui/input'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Button } from '@/components/ui/button'
-import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Loader2, ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query'
 
 export function TasksView({ initialData }: { initialData: PaginatedResponse<TaskResponse> }) {
@@ -20,9 +22,34 @@ export function TasksView({ initialData }: { initialData: PaginatedResponse<Task
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
 
+  const [search, setSearch] = useState('')
+  const [status, setStatus] = useState('ALL')
+  const [priority, setPriority] = useState('ALL')
+  const [category, setCategory] = useState('ALL')
+
+  // Debounce search
+  const [debouncedSearch, setDebouncedSearch] = useState(search)
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedSearch(search), 500)
+    return () => clearTimeout(timer)
+  }, [search])
+
+  // Reset page when filters change
+  useEffect(() => {
+    setPage(1)
+  }, [debouncedSearch, status, priority, category])
+
   const { data, isFetching, refetch } = useQuery({
-    queryKey: ['tasks', page, limit],
-    queryFn: () => fetchTasks(page, limit),
+    queryKey: ['tasks', page, limit, debouncedSearch, status, priority, category],
+    queryFn: () =>
+      fetchTasks({
+        page,
+        limit,
+        search: debouncedSearch,
+        status,
+        priority,
+        category
+      }),
     placeholderData: keepPreviousData,
     initialData: page === 1 ? initialData : undefined
   })
@@ -106,6 +133,69 @@ export function TasksView({ initialData }: { initialData: PaginatedResponse<Task
 
       {/* Right Column: Task List */}
       <div className="md:col-span-2 space-y-4">
+        <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+          <Input
+            placeholder="Search tasks..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full md:w-64"
+          />
+          <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
+            <Select value={status} onValueChange={setStatus}>
+              <SelectTrigger className="w-[120px]">
+                <SelectValue placeholder="Status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All Status</SelectItem>
+                <SelectItem value="PENDING">Pending</SelectItem>
+                <SelectItem value="DONE">Done</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={priority} onValueChange={setPriority}>
+              <SelectTrigger className="w-[120px]">
+                <SelectValue placeholder="Priority" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All Priorities</SelectItem>
+                <SelectItem value="LOW">Low</SelectItem>
+                <SelectItem value="MEDIUM">Medium</SelectItem>
+                <SelectItem value="HIGH">High</SelectItem>
+                <SelectItem value="CRITICAL">Critical</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={category} onValueChange={setCategory}>
+              <SelectTrigger className="w-[130px]">
+                <SelectValue placeholder="Category" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="ALL">All Categories</SelectItem>
+                <SelectItem value="WORK">Work</SelectItem>
+                <SelectItem value="PERSONAL">Personal</SelectItem>
+                <SelectItem value="SHOPPING">Shopping</SelectItem>
+                <SelectItem value="HEALTH">Health</SelectItem>
+                <SelectItem value="FINANCE">Finance</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => {
+                setSearch('')
+                setStatus('ALL')
+                setPriority('ALL')
+                setCategory('ALL')
+              }}
+              title="Clear filters"
+            >
+              <span className="sr-only">Clear filters</span>
+              <X className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
+
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold">Your Tasks ({meta.total})</h2>
           <div className="flex items-center gap-2">
@@ -122,7 +212,9 @@ export function TasksView({ initialData }: { initialData: PaginatedResponse<Task
           </div>
         </div>
 
-        <TaskList tasks={tasks} onRefresh={() => queryClient.invalidateQueries({ queryKey: ['tasks'] })} />
+        <div className={isFetching ? 'opacity-50 transition-opacity' : 'transition-opacity'}>
+          <TaskList tasks={tasks} onRefresh={() => queryClient.invalidateQueries({ queryKey: ['tasks'] })} />
+        </div>
 
         {/* Pagination Controls */}
         <div className="flex items-center justify-between text-sm py-4">
