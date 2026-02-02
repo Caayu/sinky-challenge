@@ -6,13 +6,9 @@ services:
     dockerfilePath: apps/api/Dockerfile
     envVars:
       - key: DATABASE_URL
-        value: file:/data/sqlite.db
+        value: file:./sqlite.db
       - key: NODE_ENV
         value: production
-    disk:
-      name: sqlite-data
-      mountPath: /data
-      sizeGB: 1
     plan: free
     autoDeploy: false
 
