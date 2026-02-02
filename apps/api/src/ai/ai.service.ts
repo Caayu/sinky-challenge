@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException, Logger } from '@nestjs/common'
+import { Injectable, InternalServerErrorException, Logger, BadRequestException } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai'
 import { AiTaskResponse, AiTaskResponseSchema } from '@repo/shared'
@@ -26,6 +26,9 @@ export class AiService {
   }
 
   async enhanceTask(text: string): Promise<AiTaskResponse> {
+    if (text.length > 500) {
+      throw new BadRequestException('Texto muito longo para processar (máx: 500 caracteres).')
+    }
     try {
       const now = new Date().toISOString()
       const prompt = `
