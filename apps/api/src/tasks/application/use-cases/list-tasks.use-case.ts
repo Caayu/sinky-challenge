@@ -21,7 +21,8 @@ export class ListTasksUseCase {
       search: query.search,
       isCompleted: query.status === 'DONE' ? true : query.status === 'PENDING' ? false : undefined,
       priority: query.priority,
-      category: query.category
+      category: query.category,
+      sort: query.sort
     })
 
     return {

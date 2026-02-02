@@ -37,15 +37,17 @@ export function TasksView({ initialData }: { initialData: PaginatedResponse<Task
     setPriority,
     category,
     setCategory,
+    sort,
+    setSort,
     clearFilters
   } = useTaskFilters()
 
   useEffect(() => {
     setPage(1)
-  }, [debouncedSearch, status, priority, category])
+  }, [debouncedSearch, status, priority, category, sort])
 
   const { data, isFetching, refetch } = useQuery({
-    queryKey: ['tasks', page, limit, debouncedSearch, status, priority, category],
+    queryKey: ['tasks', page, limit, debouncedSearch, status, priority, category, sort],
     queryFn: () =>
       fetchTasks({
         page,
@@ -53,7 +55,8 @@ export function TasksView({ initialData }: { initialData: PaginatedResponse<Task
         search: debouncedSearch,
         status,
         priority,
-        category
+        category,
+        sort
       }),
     placeholderData: keepPreviousData,
     initialData: page === 1 ? initialData : undefined
@@ -150,6 +153,16 @@ export function TasksView({ initialData }: { initialData: PaginatedResponse<Task
                     {tEnums(`Category.${c}`)}
                   </SelectItem>
                 ))}
+              </SelectContent>
+            </Select>
+
+            <Select value={sort} onValueChange={setSort}>
+              <SelectTrigger className="w-[130px]">
+                <SelectValue placeholder={t('sortBy')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="newest">{t('newest')}</SelectItem>
+                <SelectItem value="oldest">{t('oldest')}</SelectItem>
               </SelectContent>
             </Select>
 

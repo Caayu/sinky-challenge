@@ -10,6 +10,7 @@ export interface TaskRepository {
     isCompleted?: boolean
     priority?: string
     category?: string
+    sort?: 'newest' | 'oldest'
   }): Promise<{ items: Task[]; total: number }>
   update(task: Task): Promise<void>
   delete(id: string): Promise<void>

@@ -8,6 +8,7 @@ export class ListTasksQueryDto extends createZodDto(
     search: z.string().optional(),
     status: z.enum(['PENDING', 'DONE']).optional(),
     priority: z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']).optional(),
-    category: z.enum(['WORK', 'PERSONAL', 'SHOPPING', 'HEALTH', 'FINANCE']).optional()
+    category: z.enum(['WORK', 'PERSONAL', 'SHOPPING', 'HEALTH', 'FINANCE']).optional(),
+    sort: z.enum(['newest', 'oldest']).optional().default('newest')
   })
 ) {}

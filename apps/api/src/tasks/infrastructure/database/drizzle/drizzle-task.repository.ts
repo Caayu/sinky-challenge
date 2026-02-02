@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common'
 import { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
-import { eq, count, like, and, SQL } from 'drizzle-orm'
+import { eq, count, like, and, SQL, asc, desc } from 'drizzle-orm'
 import { TaskRepository } from '../../../domain/repositories/task.repository'
 import { Task } from '../../../domain/entities/task.entity'
 import { DRIZZLE_DB } from '../../../../database/database.provider'
@@ -50,7 +50,8 @@ export class DrizzleTaskRepository implements TaskRepository {
     search,
     isCompleted,
     priority,
-    category
+    category,
+    sort
   }: {
     page: number
     limit: number
@@ -58,6 +59,7 @@ export class DrizzleTaskRepository implements TaskRepository {
     isCompleted?: boolean
     priority?: string
     category?: string
+    sort?: 'newest' | 'oldest'
   }): Promise<{ items: Task[]; total: number }> {
     const offset = (page - 1) * limit
     const conditions: SQL[] = []
@@ -87,8 +89,11 @@ export class DrizzleTaskRepository implements TaskRepository {
 
     const whereClause = conditions.length > 0 ? and(...conditions) : undefined
 
+    // Default to newest (DESC) if not specified
+    const sortOrder = sort === 'oldest' ? asc(tasks.createdAt) : desc(tasks.createdAt)
+
     const [results, totalCount] = await Promise.all([
-      this.db.select().from(tasks).where(whereClause).limit(limit).offset(offset).orderBy(tasks.createdAt).all(),
+      this.db.select().from(tasks).where(whereClause).limit(limit).offset(offset).orderBy(sortOrder).all(),
       this.db.select({ count: count() }).from(tasks).where(whereClause).get()
     ])
 

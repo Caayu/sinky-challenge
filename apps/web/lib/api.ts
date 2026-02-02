@@ -8,7 +8,8 @@ export async function fetchTasks({
   search,
   status,
   priority,
-  category
+  category,
+  sort
 }: {
   page?: number
   limit?: number
@@ -16,6 +17,7 @@ export async function fetchTasks({
   status?: string
   priority?: string
   category?: string
+  sort?: string
 }): Promise<PaginatedResponse<TaskResponse>> {
   const params = new URLSearchParams({
     page: page.toString(),
@@ -26,6 +28,7 @@ export async function fetchTasks({
   if (status && status !== 'ALL') params.append('status', status)
   if (priority && priority !== 'ALL') params.append('priority', priority)
   if (category && category !== 'ALL') params.append('category', category)
+  if (sort) params.append('sort', sort)
 
   const res = await fetch(`${API_URL}/tasks?${params}`, {
     cache: 'no-store'

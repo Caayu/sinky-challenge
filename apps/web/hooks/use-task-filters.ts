@@ -5,6 +5,7 @@ export function useTaskFilters() {
   const [status, setStatus] = useState('ALL')
   const [priority, setPriority] = useState('ALL')
   const [category, setCategory] = useState('ALL')
+  const [sort, setSort] = useState('newest')
   const [debouncedSearch, setDebouncedSearch] = useState(search)
 
   useEffect(() => {
@@ -17,6 +18,7 @@ export function useTaskFilters() {
     setStatus('ALL')
     setPriority('ALL')
     setCategory('ALL')
+    setSort('newest')
   }
 
   return {
@@ -29,6 +31,8 @@ export function useTaskFilters() {
     setPriority,
     category,
     setCategory,
+    sort,
+    setSort,
     clearFilters
   }
 }
