@@ -7,12 +7,13 @@ services:
       dockerfile: apps/web/Dockerfile
     container_name: sinky-challenge-web-prod
     ports:
-      - '3001:3000' # Next.js standalone runs on 3000 by default in the container
+      - '${WEB_PORT:-3001}:3000' # Next.js standalone runs on 3000 by default in the container
     environment:
       - NODE_ENV=production
       - HOSTNAME=0.0.0.0
-      - NEXT_PUBLIC_API_URL=http://localhost:3000/api
-      - INTERNAL_API_URL=http://sinky-challenge-api-prod:3000/api
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:3000/api}
+      - INTERNAL_API_URL=${INTERNAL_API_URL:-http://sinky-challenge-api-prod:3000/api}
+      - PORT=${WEB_PORT:-3000}
     networks:
       - sinky-challenge-network
 
@@ -22,10 +23,12 @@ services:
       dockerfile: apps/api/Dockerfile
     container_name: sinky-challenge-api-prod
     ports:
-      - '3000:3000'
+      - '${API_PORT:-3000}:${API_PORT:-3000}'
     environment:
       - NODE_ENV=production
-      - DATABASE_URL=file:local.db # In prod, you'd likely map a volume for this or use a real DB
+      - DATABASE_URL=${DATABASE_URL:-file:/app/data/prod.db}
+      - PORT=${API_PORT:-3000}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
     volumes:
       - ./data:/app/data # Mount a volume for SQLite persistence if needed
     networks:

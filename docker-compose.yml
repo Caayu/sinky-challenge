@@ -6,7 +6,7 @@ services:
     container_name: sinky-challenge-web-dev
     working_dir: /app
     ports:
-      - '3001:3001'
+      - '${WEB_PORT:-3001}:${WEB_PORT:-3001}'
     volumes:
       - .:/app
       # Anonymous volumes to avoid overwriting container node_modules with host's if platform differs
@@ -15,11 +15,12 @@ services:
       # Ideally, one should use a Dev Container or simple local dev. 
       # But here is a setup that tries to run current code.
     command: >
-      sh -c "npm install -g turbo pnpm && pnpm install && turbo run dev --filter=web"
+      sh -c "npm install -g turbo pnpm && pnpm install && turbo run dev --filter=@repo/web"
     environment:
       - NODE_ENV=development
-      - NEXT_PUBLIC_API_URL=http://localhost:3000/api
-      - INTERNAL_API_URL=http://api:3000/api
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL:-http://localhost:3000/api}
+      - INTERNAL_API_URL=${INTERNAL_API_URL:-http://api:3000/api}
+      - PORT=${WEB_PORT:-3001}
     networks:
       - sinky-challenge-network
 
@@ -28,15 +29,17 @@ services:
     container_name: sinky-challenge-api-dev
     working_dir: /app
     ports:
-      - '3000:3000'
+      - '${API_PORT:-3000}:${API_PORT:-3000}'
     volumes:
       - .:/app
       - ./apps/api/dev.db:/app/apps/api/dev.db # Persist SQLite
     command: >
-      sh -c "npm install -g turbo pnpm && pnpm install && turbo run dev --filter=api"
+      sh -c "npm install -g turbo pnpm && pnpm install && turbo run db:push --filter=@repo/api && turbo run dev --filter=@repo/api"
     environment:
       - NODE_ENV=development
-      - DATABASE_URL=file:dev.db
+      - DATABASE_URL=${DATABASE_URL:-file:dev.db}
+      - PORT=${API_PORT:-3000}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
     networks:
       - sinky-challenge-network
 
