@@ -41,7 +41,7 @@ RUN pnpm turbo run build --filter=api...
 # 2. [NOVO] Gera um deploy isolado na pasta /app/pruned
 # Isso resolve as dependências e remove symlinks do workspace
 # --prod garante que só vão as dependências de produção
-RUN pnpm --filter=api --prod deploy pruned
+RUN pnpm --filter=api --prod deploy pruned --legacy
 
 # =========================
 # Runner (produção)
