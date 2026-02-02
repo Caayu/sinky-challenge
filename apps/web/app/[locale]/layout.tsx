@@ -5,7 +5,7 @@ import { Toaster } from '@/components/ui/sonner'
 import { Providers } from '@/components/providers'
 import { Header } from '@/components/header'
 import { NextIntlClientProvider } from 'next-intl'
-import { getMessages } from 'next-intl/server'
+import { getMessages, getTranslations } from 'next-intl/server'
 
 const geistSans = localFont({
   src: '../fonts/GeistVF.woff',
@@ -16,9 +16,17 @@ const geistMono = localFont({
   variable: '--font-geist-mono'
 })
 
-export const metadata: Metadata = {
-  title: 'Sinky - AI Task Manager',
-  description: 'Organize your life with AI'
+export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
+  const { locale } = await params
+  const t = await getTranslations({ locale, namespace: 'Metadata' })
+
+  return {
+    title: {
+      default: t('title'),
+      template: t('template')
+    },
+    description: t('description')
+  }
 }
 
 export default async function RootLayout({

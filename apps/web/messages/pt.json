@@ -100,12 +100,17 @@
     "tooltipLink": "Pegue sua chave aqui →"
   },
   "Header": {
-    "title": "Sinky",
+    "title": "Magic Tasks",
     "toggleTheme": "Alternar tema"
   },
   "Hero": {
     "title": "Organize sua vida com IA",
     "subtitle": "O gerenciador de tarefas mais inteligente.",
     "cta": "Começar"
+  },
+  "Metadata": {
+    "title": "Magic Tasks - Gerenciador de Tarefas IA",
+    "description": "Organize sua vida com IA",
+    "template": "%s | Magic Tasks"
   }
 }

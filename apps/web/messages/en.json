@@ -100,12 +100,17 @@
     "tooltipLink": "Get your key here →"
   },
   "Header": {
-    "title": "Sinky",
+    "title": "Magic Tasks",
     "toggleTheme": "Toggle theme"
   },
   "Hero": {
     "title": "Organize your life with AI",
     "subtitle": "The most intelligent task manager.",
     "cta": "Get Started"
+  },
+  "Metadata": {
+    "title": "Magic Tasks - AI Task Manager",
+    "description": "Organize your life with AI",
+    "template": "%s | Magic Tasks"
   }
 }
