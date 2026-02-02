@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common'
 import { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
-import { eq } from 'drizzle-orm'
+import { eq, count, like, and, SQL, asc, desc } from 'drizzle-orm'
 import { TaskRepository } from '../../../domain/repositories/task.repository'
 import { Task } from '../../../domain/entities/task.entity'
 import { DRIZZLE_DB } from '../../../../database/database.provider'
@@ -44,10 +44,60 @@ export class DrizzleTaskRepository implements TaskRepository {
     })
   }
 
-  async findAll(): Promise<Task[]> {
-    const results = await this.db.select().from(tasks).all()
+  async findAll({
+    page,
+    limit,
+    search,
+    isCompleted,
+    priority,
+    category,
+    sort
+  }: {
+    page: number
+    limit: number
+    search?: string
+    isCompleted?: boolean
+    priority?: string
+    category?: string
+    sort?: 'newest' | 'oldest'
+  }): Promise<{ items: Task[]; total: number }> {
+    const offset = (page - 1) * limit
+    const conditions: SQL[] = []
 
-    return results.map((result) =>
+    if (search) {
+      conditions.push(like(tasks.title, `%${search}%`))
+      // conditions.push(like(tasks.description, `%${search}%`)) // Optional: search description too
+    }
+
+    if (isCompleted !== undefined) {
+      // Logic for status filter: DONE -> isCompleted: true, PENDING -> isCompleted: false
+      // If passing boolean directly:
+      conditions.push(eq(tasks.isCompleted, isCompleted))
+    }
+
+    // Since isCompleted is derived from 'status' enum in DTO logic outside, keep consistent.
+    // However, if status param is missing, we fetch ALL.
+    // The boolean check above handles this if undefined is passed.
+
+    if (priority) {
+      conditions.push(eq(tasks.priority, priority))
+    }
+
+    if (category) {
+      conditions.push(eq(tasks.category, category))
+    }
+
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined
+
+    // Default to newest (DESC) if not specified
+    const sortOrder = sort === 'oldest' ? asc(tasks.createdAt) : desc(tasks.createdAt)
+
+    const [results, totalCount] = await Promise.all([
+      this.db.select().from(tasks).where(whereClause).limit(limit).offset(offset).orderBy(sortOrder).all(),
+      this.db.select({ count: count() }).from(tasks).where(whereClause).get()
+    ])
+
+    const items = results.map((result) =>
       Task.restore(result.id, {
         title: result.title,
         description: result.description ?? undefined,
@@ -59,6 +109,11 @@ export class DrizzleTaskRepository implements TaskRepository {
         updatedAt: result.updatedAt
       })
     )
+
+    return {
+      items,
+      total: totalCount?.count ?? 0
+    }
   }
 
   async update(task: Task): Promise<void> {

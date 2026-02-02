@@ -1,5 +1,6 @@
 import { Body, Controller, Post } from '@nestjs/common'
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger'
+import { ApiTags, ApiOperation, ApiResponse, ApiExtraModels, getSchemaPath } from '@nestjs/swagger'
+import { SkipThrottle } from '@nestjs/throttler'
 import { CreateTaskUseCase } from '../../application/use-cases/create-task.use-case'
 import { CreateTaskDto } from '../../application/dto/create-task.dto'
 import { TaskPresenter } from '../presenters/task.presenter'
@@ -10,10 +11,13 @@ import { UpdateTaskUseCase } from '../../application/use-cases/update-task.use-c
 import { DeleteTaskUseCase } from '../../application/use-cases/delete-task.use-case'
 import { CompleteTaskUseCase } from '../../application/use-cases/complete-task.use-case'
 import { UpdateTaskDto } from '../../application/dto/update-task.dto'
-import { HttpCode, Param, Patch, Get, Delete } from '@nestjs/common'
+import { HttpCode, Param, Patch, Get, Delete, Query } from '@nestjs/common'
 import { ErrorResponseDto } from '../../../common/dto/error-response.dto'
+import { ListTasksQueryDto } from '../../application/dto/list-tasks.dto'
+import { PaginationMetaDto } from '../../../common/dto/paginated-response.dto'
 
 @ApiTags('tasks')
+@SkipThrottle()
 @Controller('tasks')
 export class TasksController {
   constructor(
@@ -37,10 +41,26 @@ export class TasksController {
 
   @Get()
   @ApiOperation({ summary: 'List all tasks' })
-  @ApiResponse({ status: 200, description: 'Return all tasks.', type: [TaskResponseDto] })
-  async findAll() {
-    const tasks = await this.listTasksUseCase.execute()
-    return tasks.map(TaskPresenter.toResponse)
+  @ApiResponse({
+    status: 200,
+    description: 'Return all tasks.',
+    schema: {
+      properties: {
+        data: {
+          type: 'array',
+          items: { $ref: getSchemaPath(TaskResponseDto) }
+        },
+        meta: { $ref: getSchemaPath(PaginationMetaDto) }
+      }
+    }
+  })
+  @ApiExtraModels(TaskResponseDto, PaginationMetaDto)
+  async findAll(@Query() query: ListTasksQueryDto) {
+    const result = await this.listTasksUseCase.execute(query)
+    return {
+      data: result.data.map(TaskPresenter.toResponse),
+      meta: result.meta
+    }
   }
 
   @Get(':id')
