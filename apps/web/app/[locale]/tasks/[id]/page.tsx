@@ -1,7 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { useRouter, useParams } from 'next/navigation'
+import { useParams } from 'next/navigation'
+import { useRouter } from '@/i18n/routing'
+import { useTranslations, useFormatter } from 'next-intl'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { getTask, updateTask } from '@/lib/api'
 import { useTaskActions } from '@/hooks/use-task-actions'
@@ -38,16 +40,18 @@ import { UpdateTaskInput } from '@repo/shared'
 
 // Note: Ensure consistent Date format handling
 // Note: Ensure consistent Date format handling
-const formatDate = (date: string | Date) => new Date(date).toLocaleDateString()
-const formatTime = (date: string | Date) =>
-  new Date(date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
 
 export default function TaskPage() {
   const router = useRouter()
-  // useParams handles generic params in Client Component
+  // useParams handles generic params in Client Component, but we need to ensure we use the right hook if from next-intl
+  // Actually i18n/routing doesn't export useParams. But we can use next/navigation's useParams
+  // because typically we only need locale from it or the id.
   const params = useParams()
   const id = params?.id as string
   const queryClient = useQueryClient()
+  const t = useTranslations('Tasks')
+  const tEnums = useTranslations('Enums')
+  const format = useFormatter()
 
   const [isEditing, setIsEditing] = useState(false)
 
@@ -67,12 +71,12 @@ export default function TaskPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] })
       queryClient.invalidateQueries({ queryKey: ['task', id] })
-      toast.success('Task updated successfully')
+      toast.success(t('updateSuccess'))
       setIsEditing(false)
     },
     onError: (error) => {
       console.error(error)
-      toast.error('Failed to update task')
+      toast.error(t('updateError'))
     }
   })
 
@@ -95,8 +99,8 @@ export default function TaskPage() {
   if (error || !task) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen gap-4">
-        <p className="text-destructive">Failed to load task</p>
-        <Button onClick={() => router.back()}>Go Back</Button>
+        <p className="text-destructive">{t('failedLoad')}</p>
+        <Button onClick={() => router.back()}>{t('goBack')}</Button>
       </div>
     )
   }
@@ -105,14 +109,14 @@ export default function TaskPage() {
     <div className="container max-w-3xl mx-auto py-8 space-y-6">
       <div className="flex items-center justify-between">
         <Button variant="ghost" onClick={() => router.back()} className="gap-2 shrink-0">
-          <ArrowLeft className="w-4 h-4" /> Back
+          <ArrowLeft className="w-4 h-4" /> {t('back')}
         </Button>
 
         <div className="flex gap-2">
           {!isEditing && (
             <>
               <Button variant="outline" onClick={() => setIsEditing(true)}>
-                <Pencil className="w-4 h-4 mr-2" /> Edit
+                <Pencil className="w-4 h-4 mr-2" /> {t('edit')}
               </Button>
 
               <AlertDialog>
@@ -123,16 +127,16 @@ export default function TaskPage() {
                 </AlertDialogTrigger>
                 <AlertDialogContent>
                   <AlertDialogHeader>
-                    <AlertDialogTitle>Delete Task?</AlertDialogTitle>
-                    <AlertDialogDescription>This action cannot be undone.</AlertDialogDescription>
+                    <AlertDialogTitle>{t('deleteTaskMethod')}</AlertDialogTitle>
+                    <AlertDialogDescription>{t('deleteTaskDescription')}</AlertDialogDescription>
                   </AlertDialogHeader>
                   <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                    <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
                     <AlertDialogAction
                       onClick={() => handleDelete()}
                       className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                     >
-                      Delete
+                      {t('delete')}
                     </AlertDialogAction>
                   </AlertDialogFooter>
                 </AlertDialogContent>
@@ -141,7 +145,7 @@ export default function TaskPage() {
           )}
           {isEditing && (
             <Button variant="ghost" onClick={() => setIsEditing(false)}>
-              Cancel
+              {t('cancel')}
             </Button>
           )}
         </div>
@@ -151,14 +155,14 @@ export default function TaskPage() {
       {isEditing ? (
         <Card>
           <CardHeader>
-            <CardTitle>Edit Task</CardTitle>
+            <CardTitle>{t('edit')}</CardTitle>
           </CardHeader>
           <CardContent>
             <TaskForm
               initialData={task}
               onSubmit={(data) => doUpdate(data)}
               isPending={isUpdating}
-              submitLabel="Save Changes"
+              submitLabel={t('saveChanges')}
             />
           </CardContent>
         </Card>
@@ -172,7 +176,8 @@ export default function TaskPage() {
               </h1>
               <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1">
-                  <Clock className="w-3 h-3" /> Created {new Date(task.createdAt).toLocaleDateString()}
+                  <Clock className="w-3 h-3" /> {t('created')}{' '}
+                  {format.dateTime(new Date(task.createdAt), { dateStyle: 'medium' })}
                 </span>
               </div>
             </div>
@@ -184,11 +189,11 @@ export default function TaskPage() {
             >
               {task.isCompleted ? (
                 <>
-                  <CheckCircle2 className="w-4 h-4 text-green-500" /> Completed
+                  <CheckCircle2 className="w-4 h-4 text-green-500" /> {t('completed')}
                 </>
               ) : (
                 <>
-                  <Circle className="w-4 h-4" /> Mark Complete
+                  <Circle className="w-4 h-4" /> {t('markComplete')}
                 </>
               )}
             </Button>
@@ -197,13 +202,13 @@ export default function TaskPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <Card className="md:col-span-2">
               <CardHeader>
-                <CardTitle className="text-lg">Description</CardTitle>
+                <CardTitle className="text-lg">{t('description')}</CardTitle>
               </CardHeader>
               <CardContent>
                 {task.description ? (
                   <p className="whitespace-pre-wrap leading-relaxed text-muted-foreground">{task.description}</p>
                 ) : (
-                  <p className="italic text-muted-foreground/50">No description provided.</p>
+                  <p className="italic text-muted-foreground/50">{t('noDescription')}</p>
                 )}
               </CardContent>
             </Card>
@@ -212,43 +217,43 @@ export default function TaskPage() {
               <Card>
                 <CardHeader className="pb-2">
                   <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
-                    Details
+                    {t('details')}
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   <div>
                     <h3 className="text-xs font-semibold mb-1 flex items-center gap-2">
-                      <BriefcaseIcon category={task.category} /> Category
+                      <BriefcaseIcon category={task.category} /> {t('category')}
                     </h3>
                     <Badge
                       variant="secondary"
                       className={`${task.category ? categoryColors[task.category] : ''} border-0`}
                     >
-                      {task.category || 'None'}
+                      {task.category ? tEnums(`Category.${task.category}`) : 'None'}
                     </Badge>
                   </div>
 
                   <div>
                     <h3 className="text-xs font-semibold mb-1 flex items-center gap-2">
-                      <AlertTriangle className="w-3 h-3" /> Priority
+                      <AlertTriangle className="w-3 h-3" /> {t('priority')}
                     </h3>
                     <Badge
                       variant="secondary"
                       className={`${task.priority ? priorityColors[task.priority] : ''} border-0`}
                     >
-                      {task.priority || 'None'}
+                      {task.priority ? tEnums(`Priority.${task.priority}`) : 'None'}
                     </Badge>
                   </div>
 
                   {task.suggestedDeadline && (
                     <div>
                       <h3 className="text-xs font-semibold mb-1 flex items-center gap-2">
-                        <Calendar className="w-3 h-3" /> Deadline
+                        <Calendar className="w-3 h-3" /> {t('deadline')}
                       </h3>
                       <p className="text-sm font-medium">
-                        {formatDate(task.suggestedDeadline)}
+                        {format.dateTime(new Date(task.suggestedDeadline), { dateStyle: 'medium' })}
                         <span className="block text-xs text-muted-foreground font-normal">
-                          {formatTime(task.suggestedDeadline)}
+                          {format.dateTime(new Date(task.suggestedDeadline), { timeStyle: 'short' })}
                         </span>
                       </p>
                     </div>

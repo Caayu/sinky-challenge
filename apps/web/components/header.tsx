@@ -3,6 +3,7 @@
 import Link from 'next/link'
 import { Sparkles } from 'lucide-react'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { LanguageSwitcher } from '@/components/language-switcher'
 
 export function Header() {
   return (
@@ -18,6 +19,7 @@ export function Header() {
         </div>
 
         <div className="flex items-center gap-4">
+          <LanguageSwitcher />
           <ThemeToggle />
         </div>
       </div>

@@ -1,0 +1,107 @@
+{
+  "Home": {
+    "title": "Tareas Mágicas",
+    "subtitle": "Gestiona tus tareas eficientemente con el poder de la IA."
+  },
+  "Tasks": {
+    "createSuccess": "Tarea creada con éxito",
+    "createError": "Error al crear la tarea",
+    "id": "ID",
+    "title": "Título",
+    "titlePlaceholder": "Título de la tarea",
+    "description": "Descripción",
+    "descriptionPlaceholder": "Descripción de la tarea",
+    "status": "Estado",
+    "category": "Categoría",
+    "priority": "Prioridad",
+    "deadline": "Fecha límite",
+    "createButton": "Crear Tarea",
+    "updateButton": "Actualizar Tarea",
+    "saving": "Guardando...",
+    "completeSuccess": "¡Tarea completada! 🎉",
+    "unmarkSuccess": "Tarea desmarcada",
+    "deleteSuccess": "Tarea eliminada",
+    "deleteError": "Error al eliminar la tarea",
+    "updateError": "Error al actualizar la tarea",
+    "emptyState": "No hay tareas aún. ¡Crea una!",
+    "deleteConfirmTitle": "¿Estás absolutamente seguro?",
+    "deleteConfirmDescription": "Esta acción no se puede deshacer. Esto eliminará permanentemente la tarea.",
+    "cancel": "Cancelar",
+    "delete": "Eliminar",
+    "yourTasks": "Tus Tareas",
+    "refresh": "Actualizar",
+    "searchPlaceholder": "Buscar tareas...",
+    "statusPlaceholder": "Estado",
+    "priorityPlaceholder": "Prioridad",
+    "categoryPlaceholder": "Categoría",
+    "allStatus": "Todos Estados",
+    "allPriorities": "Todas Prioridades",
+    "allCategories": "Todas Categorías",
+    "clearFilters": "Limpiar filtros",
+    "page": "Página",
+    "of": "de",
+    "prev": "Ant",
+    "next": "Sig",
+    "manualTab": "Manual",
+    "aiTab": "IA Mágica",
+    "goBack": "Volver",
+    "back": "Atrás",
+    "edit": "Editar",
+    "saveChanges": "Guardar Cambios",
+    "deleteTaskMethod": "¿Eliminar Tarea?",
+    "deleteTaskDescription": "Esta acción no se puede deshacer.",
+    "markComplete": "Completar",
+    "completed": "Completada",
+    "noDescription": "Sin descripción proporcionada.",
+    "details": "Detalles",
+    "created": "Creada",
+    "failedLoad": "Error al cargar la tarea",
+    "updateSuccess": "Tarea actualizada con éxito"
+  },
+  "Enums": {
+    "Status": {
+      "PENDING": "Pendiente",
+      "DONE": "Hecha"
+    },
+    "Priority": {
+      "LOW": "Baja",
+      "MEDIUM": "Media",
+      "HIGH": "Alta",
+      "CRITICAL": "Crítica"
+    },
+    "Category": {
+      "WORK": "Trabajo",
+      "PERSONAL": "Personal",
+      "STUDY": "Estudio",
+      "SHOPPING": "Compras",
+      "HEALTH": "Salud",
+      "FINANCE": "Finanzas"
+    }
+  },
+  "Ai": {
+    "apiKeyLabel": "Clave API Gemini (Requerido)",
+    "apiKeyPlaceholder": "Pega tu clave aquí (empieza con AIza)",
+    "helperText": "La clave se envía de forma segura y nunca se registra.",
+    "promptLabel": "¿Qué quieres lograr?",
+    "promptPlaceholder": "Ej: Planear una fiesta de cumpleaños...",
+    "subtasksLabel": "Dividir en subtareas",
+    "thinking": "IA está pensando...",
+    "finalizing": "Finalizando...",
+    "generating": "Generando...",
+    "magicButton": "Generación Mágica ✨",
+    "success": "¡Generado con éxito! 🤖",
+    "error": "Error al generar tarea(s)",
+    "tooltip1": "Se requiere una clave API para acceder.",
+    "tooltip2": "El modelo gemini-flash-latest tiene nivel gratuito.",
+    "tooltipLink": "Obtén tu clave aquí →"
+  },
+  "Header": {
+    "title": "Sinky",
+    "toggleTheme": "Alternar tema"
+  },
+  "Hero": {
+    "title": "Organiza tu vida con IA",
+    "subtitle": "El gestor de tareas más inteligente.",
+    "cta": "Empezar"
+  }
+}

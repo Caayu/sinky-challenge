@@ -14,7 +14,10 @@ import { HelpCircle, Loader2 } from 'lucide-react'
 import { useMutation } from '@tanstack/react-query'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
+import { useTranslations } from 'next-intl'
+
 export function AiTaskGenerator({ onTaskCreated }: { onTaskCreated: () => void }) {
+  const t = useTranslations('Ai')
   const [prompt, setPrompt] = useState('')
   const [apiKey, setApiKey] = useState('')
   const [isSubtasks, setIsSubtasks] = useState(false)
@@ -32,11 +35,11 @@ export function AiTaskGenerator({ onTaskCreated }: { onTaskCreated: () => void }
       setProgress(100)
       setPrompt('')
       onTaskCreated()
-      toast.success('Generated successfully! 🤖')
+      toast.success(t('success'))
     },
     onError: (error) => {
       console.error(error)
-      toast.error(error instanceof Error ? error.message : 'Failed to generate task(s)')
+      toast.error(error instanceof Error ? error.message : t('error'))
     }
   })
 
@@ -55,7 +58,7 @@ export function AiTaskGenerator({ onTaskCreated }: { onTaskCreated: () => void }
       if (progress !== 100) setProgress(0) // Reset if not success (or handle success differently)
     }
     return () => clearInterval(interval)
-  }, [isPending])
+  }, [isPending, progress])
 
   const handleGenerate = () => {
     if (!prompt || !apiKey) return
@@ -66,16 +69,16 @@ export function AiTaskGenerator({ onTaskCreated }: { onTaskCreated: () => void }
     <div className="space-y-4 p-4 border rounded-lg bg-card text-card-foreground">
       <div className="space-y-2">
         <div className="flex items-center gap-2">
-          <Label htmlFor="apiKey">Gemini API Key (Required)</Label>
+          <Label htmlFor="apiKey">{t('apiKeyLabel')}</Label>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
                 <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
               </TooltipTrigger>
               <TooltipContent className="max-w-[300px]">
-                <p>An API Key is required to access Google&apos;s AI service.</p>
+                <p>{t('tooltip1')}</p>
                 <p className="mt-2">
-                  The model <strong>gemini-flash-latest</strong> has a free tier.
+                  {t('tooltip2')} (<strong>gemini-flash-latest</strong>)
                 </p>
                 <a
                   href="https://aistudio.google.com/app/apikey"
@@ -83,7 +86,7 @@ export function AiTaskGenerator({ onTaskCreated }: { onTaskCreated: () => void }
                   rel="noopener noreferrer"
                   className="text-blue-500 hover:underline mt-2 block"
                 >
-                  Get your key here →
+                  {t('tooltipLink')}
                 </a>
               </TooltipContent>
             </Tooltip>
@@ -94,32 +97,32 @@ export function AiTaskGenerator({ onTaskCreated }: { onTaskCreated: () => void }
           type="password"
           value={apiKey}
           onChange={(e) => setApiKey(e.target.value)}
-          placeholder="Paste your Gemini API Key here (starts with AIza)"
+          placeholder={t('apiKeyPlaceholder')}
         />
-        <p className="text-xs text-muted-foreground">The key is sent securely in headers and never logged.</p>
+        <p className="text-xs text-muted-foreground">{t('helperText')}</p>
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="prompt">What do you want to achieve?</Label>
+        <Label htmlFor="prompt">{t('promptLabel')}</Label>
         <Textarea
           id="prompt"
           value={prompt}
           onChange={(e) => setPrompt(e.target.value)}
-          placeholder="Ex: Plan a birthday party for next Saturday..."
+          placeholder={t('promptPlaceholder')}
           rows={4}
         />
       </div>
 
       <div className="flex items-center space-x-2">
         <Checkbox id="subtasks" checked={isSubtasks} onCheckedChange={(c) => setIsSubtasks(!!c)} />
-        <Label htmlFor="subtasks">Break down into subtasks</Label>
+        <Label htmlFor="subtasks">{t('subtasksLabel')}</Label>
       </div>
 
       {isPending && (
         <div className="space-y-1">
           <Progress value={progress} className="h-2" />
           <p className="text-xs text-center text-muted-foreground">
-            {progress >= 90 ? 'Finalizing...' : 'AI is thinking...'}
+            {progress >= 90 ? t('finalizing') : t('thinking')}
           </p>
         </div>
       )}
@@ -128,10 +131,10 @@ export function AiTaskGenerator({ onTaskCreated }: { onTaskCreated: () => void }
         {isPending ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Generating...
+            {t('generating')}
           </>
         ) : (
-          'Magic Generate ✨'
+          t('magicButton')
         )}
       </Button>
     </div>

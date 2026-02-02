@@ -1,6 +1,6 @@
 'use client'
 
-import Link from 'next/link'
+import { Link } from '@/i18n/routing'
 import { TaskResponse } from '@repo/shared'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Button } from '@/components/ui/button'

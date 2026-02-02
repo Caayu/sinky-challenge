@@ -1,0 +1,107 @@
+{
+  "Home": {
+    "title": "Magic Tasks",
+    "subtitle": "Manage your tasks efficiently with AI power."
+  },
+  "Tasks": {
+    "createSuccess": "Task created successfully",
+    "createError": "Failed to create task",
+    "id": "ID",
+    "title": "Title",
+    "titlePlaceholder": "Task title",
+    "description": "Description",
+    "descriptionPlaceholder": "Task description",
+    "status": "Status",
+    "category": "Category",
+    "priority": "Priority",
+    "deadline": "Deadline",
+    "createButton": "Create Task",
+    "updateButton": "Update Task",
+    "saving": "Saving...",
+    "completeSuccess": "Task completed! 🎉",
+    "unmarkSuccess": "Task unmarked",
+    "deleteSuccess": "Task deleted",
+    "deleteError": "Failed to delete task",
+    "updateError": "Failed to update task",
+    "emptyState": "No tasks yet. Create one!",
+    "deleteConfirmTitle": "Are you absolutely sure?",
+    "deleteConfirmDescription": "This action cannot be undone. This will permanently delete the task.",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "yourTasks": "Your Tasks",
+    "refresh": "Refresh",
+    "searchPlaceholder": "Search tasks...",
+    "statusPlaceholder": "Status",
+    "priorityPlaceholder": "Priority",
+    "categoryPlaceholder": "Category",
+    "allStatus": "All Status",
+    "allPriorities": "All Priorities",
+    "allCategories": "All Categories",
+    "clearFilters": "Clear filters",
+    "page": "Page",
+    "of": "of",
+    "prev": "Prev",
+    "next": "Next",
+    "manualTab": "Manual",
+    "aiTab": "AI Magic",
+    "goBack": "Go Back",
+    "back": "Back",
+    "edit": "Edit",
+    "saveChanges": "Save Changes",
+    "deleteTaskMethod": "Delete Task?",
+    "deleteTaskDescription": "This action cannot be undone.",
+    "markComplete": "Mark Complete",
+    "completed": "Completed",
+    "noDescription": "No description provided.",
+    "details": "Details",
+    "created": "Created",
+    "failedLoad": "Failed to load task",
+    "updateSuccess": "Task updated successfully"
+  },
+  "Enums": {
+    "Status": {
+      "PENDING": "Pending",
+      "DONE": "Done"
+    },
+    "Priority": {
+      "LOW": "Low",
+      "MEDIUM": "Medium",
+      "HIGH": "High",
+      "CRITICAL": "Critical"
+    },
+    "Category": {
+      "WORK": "Work",
+      "PERSONAL": "Personal",
+      "STUDY": "Study",
+      "SHOPPING": "Shopping",
+      "HEALTH": "Health",
+      "FINANCE": "Finance"
+    }
+  },
+  "Ai": {
+    "apiKeyLabel": "Gemini API Key (Required)",
+    "apiKeyPlaceholder": "Paste your Gemini API Key here (starts with AIza)",
+    "helperText": "The key is sent securely in headers and never logged.",
+    "promptLabel": "What do you want to achieve?",
+    "promptPlaceholder": "Ex: Plan a birthday party for next Saturday...",
+    "subtasksLabel": "Break down into subtasks",
+    "thinking": "AI is thinking...",
+    "finalizing": "Finalizing...",
+    "generating": "Generating...",
+    "magicButton": "Magic Generate ✨",
+    "success": "Generated successfully! 🤖",
+    "error": "Failed to generate task(s)",
+    "tooltip1": "An API Key is required to access Google's AI service.",
+    "tooltip2": "The model gemini-flash-latest has a free tier.",
+    "tooltipLink": "Get your key here →"
+  },
+  "Header": {
+    "title": "Sinky",
+    "toggleTheme": "Toggle theme"
+  },
+  "Hero": {
+    "title": "Organize your life with AI",
+    "subtitle": "The most intelligent task manager.",
+    "cta": "Get Started"
+  }
+}

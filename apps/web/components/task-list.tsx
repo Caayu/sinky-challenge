@@ -15,7 +15,10 @@ import {
 import { useMutation } from '@tanstack/react-query'
 import { TaskCard } from './task-card'
 
+import { useTranslations } from 'next-intl'
+
 export function TaskList({ tasks, onRefresh }: { tasks: TaskResponse[]; onRefresh: () => void }) {
+  const t = useTranslations('Tasks')
   const [deleteId, setDeleteId] = useState<string | null>(null)
 
   const { mutate: toggleTask } = useMutation({
@@ -28,33 +31,33 @@ export function TaskList({ tasks, onRefresh }: { tasks: TaskResponse[]; onRefres
     },
     onSuccess: (data, variables) => {
       if (!variables.isCompleted) {
-        toast.success('Task completed! 🎉')
+        toast.success(t('completeSuccess'))
       } else {
-        toast.info('Task unmarked')
+        toast.info(t('unmarkSuccess'))
       }
       onRefresh()
     },
     onError: (error) => {
       console.error(error)
-      toast.error('Failed to update task')
+      toast.error(t('updateError'))
     }
   })
 
   const { mutate: confirmDelete } = useMutation({
     mutationFn: async (id: string) => deleteTask(id),
     onSuccess: () => {
-      toast.error('Task deleted')
+      toast.error(t('deleteSuccess'))
       onRefresh()
       setDeleteId(null)
     },
     onError: (error) => {
       console.error(error)
-      toast.error('Failed to delete task')
+      toast.error(t('deleteError'))
     }
   })
 
   if (tasks.length === 0) {
-    return <div className="text-center text-muted-foreground py-8">No tasks yet. Create one!</div>
+    return <div className="text-center text-muted-foreground py-8">{t('emptyState')}</div>
   }
 
   return (
@@ -68,18 +71,16 @@ export function TaskList({ tasks, onRefresh }: { tasks: TaskResponse[]; onRefres
       <AlertDialog open={!!deleteId} onOpenChange={(open) => !open && setDeleteId(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-            <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete the task.
-            </AlertDialogDescription>
+            <AlertDialogTitle>{t('deleteConfirmTitle')}</AlertDialogTitle>
+            <AlertDialogDescription>{t('deleteConfirmDescription')}</AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
             <AlertDialogAction
               onClick={() => deleteId && confirmDelete(deleteId)}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
             >
-              Delete
+              {t('delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
