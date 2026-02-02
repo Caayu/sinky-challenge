@@ -177,14 +177,14 @@ We use **Drizzle ORM** for its minimal overhead and TypeScript integration.
 
 ### Schema: `tasks` table
 
-| Column         | Type    | Constraints | Description          |
-| :------------- | :------ | :---------- | :------------------- | -------- |
-| `id`           | TEXT    | PRIMARY KEY | UUID v4              |
-| `title`        | TEXT    | NOT NULL    | Task title           |
-| `description`  | TEXT    | NULLABLE    | Detailed description |
-| `is_completed` | INTEGER | DEFAULT 0   | Boolean flag (0/1)   |
-| `limit_date`   | INTEGER | NULLABLE    | UNIX Timestamp       |
-| `priority`     | TEXT    | ENUM        | LOW, MEDIUM, HIGH    | CRITICAL |
+| Column         | Type    | Constraints | Description                 |
+| :------------- | :------ | :---------- | :-------------------------- |
+| `id`           | TEXT    | PRIMARY KEY | UUID v4                     |
+| `title`        | TEXT    | NOT NULL    | Task title                  |
+| `description`  | TEXT    | NULLABLE    | Detailed description        |
+| `is_completed` | INTEGER | DEFAULT 0   | Boolean flag (0/1)          |
+| `limit_date`   | INTEGER | NULLABLE    | UNIX Timestamp              |
+| `priority`     | TEXT    | ENUM        | LOW, MEDIUM, HIGH, CRITICAL |
 
 ---
 
