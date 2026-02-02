@@ -21,7 +21,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { Badge } from '@/components/ui/badge'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,6 +34,7 @@ import {
   AlertDialogTrigger
 } from '@/components/ui/alert-dialog'
 import { priorityColors, categoryColors } from '@/lib/constants'
+import { UpdateTaskInput } from '@repo/shared'
 
 // Note: Ensure consistent Date format handling
 // Note: Ensure consistent Date format handling
@@ -60,8 +61,9 @@ export default function TaskPage() {
     enabled: !!id
   })
 
+  // Fixed: typed update call
   const { mutate: doUpdate, isPending: isUpdating } = useMutation({
-    mutationFn: (data: any) => updateTask(id, data),
+    mutationFn: (data: UpdateTaskInput) => updateTask(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tasks'] })
       queryClient.invalidateQueries({ queryKey: ['task', id] })

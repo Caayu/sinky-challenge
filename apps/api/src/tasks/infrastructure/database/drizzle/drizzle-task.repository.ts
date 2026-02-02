@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common'
 import { BetterSQLite3Database } from 'drizzle-orm/better-sqlite3'
-import { eq, count, like, and } from 'drizzle-orm'
+import { eq, count, like, and, SQL } from 'drizzle-orm'
 import { TaskRepository } from '../../../domain/repositories/task.repository'
 import { Task } from '../../../domain/entities/task.entity'
 import { DRIZZLE_DB } from '../../../../database/database.provider'
@@ -60,7 +60,7 @@ export class DrizzleTaskRepository implements TaskRepository {
     category?: string
   }): Promise<{ items: Task[]; total: number }> {
     const offset = (page - 1) * limit
-    const conditions = []
+    const conditions: SQL[] = []
 
     if (search) {
       conditions.push(like(tasks.title, `%${search}%`))
@@ -85,7 +85,7 @@ export class DrizzleTaskRepository implements TaskRepository {
       conditions.push(eq(tasks.category, category))
     }
 
-    const whereClause = conditions.length > 0 ? and(...(conditions as any[])) : undefined
+    const whereClause = conditions.length > 0 ? and(...conditions) : undefined
 
     const [results, totalCount] = await Promise.all([
       this.db.select().from(tasks).where(whereClause).limit(limit).offset(offset).orderBy(tasks.createdAt).all(),
