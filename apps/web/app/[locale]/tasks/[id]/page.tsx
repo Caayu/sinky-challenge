@@ -71,8 +71,7 @@ export default function TaskPage() {
       toast.success(t('updateSuccess'))
       setIsEditing(false)
     },
-    onError: (error) => {
-      console.error(error)
+    onError: () => {
       toast.error(t('updateError'))
     }
   })

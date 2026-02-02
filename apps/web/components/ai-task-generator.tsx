@@ -40,7 +40,6 @@ export function AiTaskGenerator({ onTaskCreated }: { onTaskCreated: () => void }
       toast.success(t('success'))
     },
     onError: (error) => {
-      console.error(error)
       toast.error(error instanceof Error ? error.message : t('error'))
     }
   })

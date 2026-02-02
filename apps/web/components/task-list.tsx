@@ -38,8 +38,7 @@ export function TaskList({ tasks, onRefresh }: { tasks: TaskResponse[]; onRefres
       }
       onRefresh()
     },
-    onError: (error) => {
-      console.error(error)
+    onError: () => {
       toast.error(t('updateError'))
     }
   })
@@ -51,8 +50,7 @@ export function TaskList({ tasks, onRefresh }: { tasks: TaskResponse[]; onRefres
       onRefresh()
       setDeleteId(null)
     },
-    onError: (error) => {
-      console.error(error)
+    onError: () => {
       toast.error(t('deleteError'))
     }
   })

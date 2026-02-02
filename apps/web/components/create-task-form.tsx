@@ -15,8 +15,7 @@ export function CreateTaskForm({ onTaskCreated }: { onTaskCreated: () => void })
       onTaskCreated()
       toast.success(t('createSuccess'))
     },
-    onError: (error) => {
-      console.error(error)
+    onError: () => {
       toast.error(t('createError'))
     }
   })

@@ -9,8 +9,7 @@ export const dynamic = 'force-dynamic'
 async function getInitialTasks(): Promise<PaginatedResponse<TaskResponse>> {
   try {
     return await fetchTasks({})
-  } catch (error) {
-    console.error('Failed to fetch initial tasks:', error)
+  } catch {
     return {
       data: [],
       meta: { total: 0, page: 1, limit: 10, totalPages: 0, hasNextPage: false, hasPreviousPage: false }
