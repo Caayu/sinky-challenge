@@ -29,7 +29,9 @@ WORKDIR /app
 COPY --from=builder /app/out/json/ .
 COPY --from=builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 
-# Instala todas as dependências (necessário para o build)
+# Instala dependências
+# (Nota: better-sqlite3 precisa de python/build tools se não houver binário pré-compilado,
+# mas geralmente funciona bem nas versões recentes do node-slim. Se der erro de build, avise)
 RUN pnpm install --frozen-lockfile --unsafe-perm
 
 # Copia o código fonte
@@ -38,9 +40,7 @@ COPY --from=builder /app/out/full/ .
 # 1. Faz o Build
 RUN pnpm turbo run build --filter=api...
 
-# 2. [NOVO] Gera um deploy isolado na pasta /app/pruned
-# Isso resolve as dependências e remove symlinks do workspace
-# --prod garante que só vão as dependências de produção
+# 2. Gera deploy isolado (com --legacy para pnpm v10)
 RUN pnpm --filter=api --prod deploy pruned --legacy
 
 # =========================
@@ -50,15 +50,24 @@ FROM node:20.20.0-slim AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
+# Define o caminho padrão do banco para facilitar (Drizzle lerá isso se configurado)
+ENV DATABASE_URL="file:/app/data/sqlite.db"
 
 RUN addgroup --system --gid 1001 nodejs \
     && adduser --system --uid 1001 nestjs
 
+# [CRUCIAL] Cria a pasta 'data' e transfere a posse para o usuário nestjs
+# Sem isso, o SQLite lança o erro SQLITE_CANTOPEN
+RUN mkdir -p /app/data && chown -R nestjs:nodejs /app/data
+
 USER nestjs
 
-# [NOVO] Copia TUDO da pasta 'pruned' gerada pelo pnpm deploy
-# Essa pasta já contém: dist, node_modules (correto) e package.json
+# Copia o app preparado
 COPY --from=installer --chown=nestjs:nodejs /app/pruned ./
+
+# Se você roda migrations via comando separado, copie a pasta de migrations também
+# Geralmente o 'pnpm deploy' já traz se estiver dentro do pacote, mas se estiver na raiz do repo:
+# COPY --from=installer --chown=nestjs:nodejs /app/apps/api/drizzle ./drizzle
 
 # Comando para iniciar
 CMD ["node", "dist/main.js"]
