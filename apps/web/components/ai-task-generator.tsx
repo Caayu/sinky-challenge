@@ -9,9 +9,10 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { Progress } from '@/components/ui/progress'
 import { enhanceTask, generateSubtasks } from '@/lib/api'
 import { toast } from 'sonner'
-import { Loader2 } from 'lucide-react'
+import { HelpCircle, Loader2 } from 'lucide-react'
 
 import { useMutation } from '@tanstack/react-query'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
 export function AiTaskGenerator({ onTaskCreated }: { onTaskCreated: () => void }) {
   const [prompt, setPrompt] = useState('')
@@ -64,7 +65,30 @@ export function AiTaskGenerator({ onTaskCreated }: { onTaskCreated: () => void }
   return (
     <div className="space-y-4 p-4 border rounded-lg bg-card text-card-foreground">
       <div className="space-y-2">
-        <Label htmlFor="apiKey">Gemini API Key (Required)</Label>
+        <div className="flex items-center gap-2">
+          <Label htmlFor="apiKey">Gemini API Key (Required)</Label>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <HelpCircle className="h-4 w-4 text-muted-foreground cursor-help" />
+              </TooltipTrigger>
+              <TooltipContent className="max-w-[300px]">
+                <p>An API Key is required to access Google&apos;s AI service.</p>
+                <p className="mt-2">
+                  The model <strong>gemini-flash-latest</strong> has a free tier.
+                </p>
+                <a
+                  href="https://aistudio.google.com/app/apikey"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 hover:underline mt-2 block"
+                >
+                  Get your key here →
+                </a>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
         <Input
           id="apiKey"
           type="password"
