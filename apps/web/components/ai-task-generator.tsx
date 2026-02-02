@@ -51,15 +51,18 @@ export function AiTaskGenerator({ onTaskCreated }: { onTaskCreated: () => void }
       setProgress(10)
       interval = setInterval(() => {
         setProgress((prev) => {
-          if (prev >= 90) return prev
-          return prev + Math.random() * 10
+          // Asymptotic approach to 95%
+          if (prev >= 95) return prev
+          const remaining = 95 - prev
+          const jump = Math.max(0.5, remaining * 0.1) // 10% of remaining distance or min 0.5
+          return prev + jump
         })
       }, 500)
     } else {
-      if (progress !== 100) setProgress(0) // Reset if not success (or handle success differently)
+      if (progress !== 100) setProgress(0)
     }
     return () => clearInterval(interval)
-  }, [isPending, progress])
+  }, [isPending])
 
   const handleGenerate = () => {
     if (!prompt || !apiKey) return
