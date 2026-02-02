@@ -3,12 +3,16 @@ services:
     name: sinky-api
     runtime: docker
     dockerContext: .
-    dockerfilePath: apps/api/Dockerfile
+    dockerfilePath: Dockerfile
     envVars:
       - key: DATABASE_URL
-        value: "file:/app/data/sqlite.db"
+        value: "file:/data/sqlite.db"
       - key: NODE_ENV
         value: production
+    disk:
+      name: sinky-data
+      mountPath: /data
+      sizeGB: 1
     plan: free
     autoDeploy: false
 

@@ -1,66 +1,34 @@
-# =========================
-# Base
-# =========================
-FROM node:20.20.0-slim AS base
-WORKDIR /app
-ENV PNPM_HOME="/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
+FROM node:20-slim
 
-# =========================
-# Builder
-# =========================
-FROM base AS builder
-RUN npm install -g turbo
+WORKDIR /app
+
+# Instala dependências do sistema
+RUN apt-get update && \
+    apt-get install -y python3 make g++ openssl && \
+    rm -rf /var/lib/apt/lists/* && \
+    corepack enable && \
+    corepack prepare pnpm@10.28.2 --activate
+
+# Copia tudo (IMPORTANTE: incluindo tsconfig.json na raiz)
 COPY . .
-# Prune apenas a api
-RUN turbo prune api --docker
 
-# =========================
-# Installer
-# =========================
-FROM base AS installer
-# Deps de sistema para build
-RUN apt-get update && apt-get install -y python3 make g++
-RUN corepack enable && corepack prepare pnpm@10.28.2 --activate
+# Instala dependências
+RUN pnpm install --frozen-lockfile
 
-WORKDIR /app
+# Build usando Turbo (resolve paths corretamente)
+RUN pnpm turbo build --filter=api...
 
-COPY --from=builder /app/out/json/ .
-COPY --from=builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
+# Vai pra pasta da API
+WORKDIR /app/apps/api
 
-RUN pnpm install --frozen-lockfile --unsafe-perm
+# Cria diretório para dados persistentes e dá permissões
+RUN mkdir -p /data && chmod 777 /data
 
-COPY --from=builder /app/out/full/ .
+# Define variável de ambiente para o banco
+ENV DATABASE_URL="file:/data/sqlite.db"
 
-RUN pnpm turbo run build --filter=api...
+# Expõe porta
+EXPOSE 3000
 
-RUN pnpm --filter=api --prod deploy pruned --legacy
-
-# =========================
-# Runner (A SOLUÇÃO REAL)
-# =========================
-FROM node:20.20.0-slim AS runner
-WORKDIR /app
-
-ENV NODE_ENV=production
-ENV DATABASE_URL="file:/app/sqlite.db"
-
-# 1. Instala Python e ferramentas de build (Necessário para better-sqlite3)
-RUN apt-get update && apt-get install -y python3 make g++ openssl
-
-# 2. Copia a aplicação
-COPY --from=installer /app/pruned ./
-COPY --from=installer /app/apps/api/drizzle.config.ts ./
-COPY --from=installer /app/apps/api/src ./src
-
-# 3. O package.json tem referências "workspace:*" que o NPM não entende.
-# Usamos 'sed' para deletar qualquer linha que tenha 'workspace:' do arquivo.
-# Isso "sanitiza" o arquivo para o NPM conseguir ler.
-RUN sed -i '/workspace:/d' package.json
-
-# 4. Agora instalamos as dependências faltantes sem erro de protocolo
-# O --no-save evita tentar reescrever o package.json de forma complexa
-RUN npm install --no-save better-sqlite3 drizzle-orm drizzle-kit
-
-# 5. Comando de inicialização
-CMD ["sh", "-c", "./node_modules/.bin/drizzle-kit push && node dist/main.js"]
+# Roda migrations e inicia
+CMD ["sh", "-c", "pnpm drizzle-kit push && node dist/main.js"]
