@@ -20,7 +20,7 @@ COPY --from=builder /app/out/json/ .
 COPY --from=builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 
 # Enable corepack for pnpm
-RUN corepack enable
+RUN npm install -g pnpm@10.28.2
 
 # Install dependencies based on the pruned workspace
 RUN pnpm install
