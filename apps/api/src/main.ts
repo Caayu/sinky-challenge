@@ -7,6 +7,7 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule)
 
   app.enableCors()
+  app.setGlobalPrefix('api')
   app.use(json({ limit: '10kb' }))
 
   const config = new DocumentBuilder()
@@ -16,7 +17,7 @@ async function bootstrap() {
     .build()
 
   const document = SwaggerModule.createDocument(app, config)
-  SwaggerModule.setup('api', app, document)
+  SwaggerModule.setup('api/docs', app, document)
 
   const { ZodValidationPipe } = await import('nestjs-zod')
   app.useGlobalPipes(new ZodValidationPipe())
