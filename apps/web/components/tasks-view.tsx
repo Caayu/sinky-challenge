@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { fetchTasks } from '@/lib/api'
-import { TaskResponse, PaginatedResponse } from '@repo/shared'
+import { TaskResponse, PaginatedResponse, TaskCategory, TaskPriority } from '@repo/shared'
 import { TaskList } from '@/components/task-list'
 import { CreateTaskForm } from '@/components/create-task-form'
 import { AiTaskGenerator } from '@/components/ai-task-generator'
@@ -12,6 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button'
 import { Loader2, ChevronLeft, ChevronRight, X } from 'lucide-react'
 import { useQuery, useQueryClient, keepPreviousData } from '@tanstack/react-query'
+import { useTaskFilters } from '@/hooks/use-task-filters'
 
 export function TasksView({ initialData }: { initialData: PaginatedResponse<TaskResponse> }) {
   const [page, setPage] = useState(initialData.meta.page)
@@ -22,17 +23,18 @@ export function TasksView({ initialData }: { initialData: PaginatedResponse<Task
   const [mounted, setMounted] = useState(false)
   useEffect(() => setMounted(true), [])
 
-  const [search, setSearch] = useState('')
-  const [status, setStatus] = useState('ALL')
-  const [priority, setPriority] = useState('ALL')
-  const [category, setCategory] = useState('ALL')
-
-  // Debounce search
-  const [debouncedSearch, setDebouncedSearch] = useState(search)
-  useEffect(() => {
-    const timer = setTimeout(() => setDebouncedSearch(search), 500)
-    return () => clearTimeout(timer)
-  }, [search])
+  const {
+    search,
+    setSearch,
+    debouncedSearch,
+    status,
+    setStatus,
+    priority,
+    setPriority,
+    category,
+    setCategory,
+    clearFilters
+  } = useTaskFilters()
 
   // Reset page when filters change
   useEffect(() => {
@@ -54,16 +56,12 @@ export function TasksView({ initialData }: { initialData: PaginatedResponse<Task
     initialData: page === 1 ? initialData : undefined
   })
 
-  // Use data from query or fallback to initial (though initialData handles page 1)
+  // Use data from query or fallback to initial
   const tasks = data?.data ?? []
   const meta = data?.meta ?? initialData.meta
 
   const handleTaskCreated = () => {
-    // Invalidate and refetch tasks to show new one
     queryClient.invalidateQueries({ queryKey: ['tasks'] })
-    // Reset to page 1 to see new task if desired, or stay current?
-    // User expectation: usually want to see the new task.
-    // Given sorting is by createdAt DESC, new task is on page 1.
     if (page !== 1) setPage(1)
   }
 
@@ -79,35 +77,11 @@ export function TasksView({ initialData }: { initialData: PaginatedResponse<Task
     return (
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         <div className="md:col-span-1 space-y-6">
-          {/* Skeleton for Tabs during SSR to avoid mismatch */}
           <div className="h-[300px] border rounded-lg bg-muted/10 animate-pulse" />
         </div>
-
-        {/* Render TaskList immediately since it has initialData and no complex interactive state causing ID mismatch */}
         <div className="md:col-span-2 space-y-4">
-          <div className="flex items-center justify-between">
-            <h2 className="text-xl font-semibold">Your Tasks ({meta.total})</h2>
-            <Button variant="ghost" size="sm" className="text-primary hover:underline gap-1" disabled>
-              Refresh
-            </Button>
-          </div>
+          {/* Skeleton or initial list */}
           <TaskList tasks={initialData.data} onRefresh={() => {}} />
-          {/* Pagination placeholder */}
-          <div className="flex items-center justify-between text-sm py-4">
-            <div className="text-muted-foreground">
-              Page {initialData.meta.page} of {initialData.meta.totalPages}
-            </div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" disabled>
-                <ChevronLeft className="w-4 h-4 mr-1" />
-                Prev
-              </Button>
-              <Button variant="outline" size="sm" disabled>
-                Next
-                <ChevronRight className="w-4 h-4 ml-1" />
-              </Button>
-            </div>
-          </div>
         </div>
       </div>
     )
@@ -158,10 +132,11 @@ export function TasksView({ initialData }: { initialData: PaginatedResponse<Task
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="ALL">All Priorities</SelectItem>
-                <SelectItem value="LOW">Low</SelectItem>
-                <SelectItem value="MEDIUM">Medium</SelectItem>
-                <SelectItem value="HIGH">High</SelectItem>
-                <SelectItem value="CRITICAL">Critical</SelectItem>
+                {Object.values(TaskPriority).map((p) => (
+                  <SelectItem key={p} value={p}>
+                    {p.charAt(0) + p.slice(1).toLowerCase()}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
 
@@ -171,25 +146,15 @@ export function TasksView({ initialData }: { initialData: PaginatedResponse<Task
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="ALL">All Categories</SelectItem>
-                <SelectItem value="WORK">Work</SelectItem>
-                <SelectItem value="PERSONAL">Personal</SelectItem>
-                <SelectItem value="SHOPPING">Shopping</SelectItem>
-                <SelectItem value="HEALTH">Health</SelectItem>
-                <SelectItem value="FINANCE">Finance</SelectItem>
+                {Object.values(TaskCategory).map((c) => (
+                  <SelectItem key={c} value={c}>
+                    {c.charAt(0) + c.slice(1).toLowerCase()}
+                  </SelectItem>
+                ))}
               </SelectContent>
             </Select>
 
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => {
-                setSearch('')
-                setStatus('ALL')
-                setPriority('ALL')
-                setCategory('ALL')
-              }}
-              title="Clear filters"
-            >
+            <Button variant="ghost" size="icon" onClick={clearFilters} title="Clear filters">
               <span className="sr-only">Clear filters</span>
               <X className="w-4 h-4" />
             </Button>
@@ -198,25 +163,22 @@ export function TasksView({ initialData }: { initialData: PaginatedResponse<Task
 
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold">Your Tasks ({meta.total})</h2>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => refetch()}
-              className="text-primary hover:underline gap-1"
-              disabled={isFetching}
-            >
-              {isFetching && <Loader2 className="w-3 h-3 animate-spin" />}
-              Refresh
-            </Button>
-          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => refetch()}
+            className="text-primary hover:underline gap-1"
+            disabled={isFetching}
+          >
+            {isFetching && <Loader2 className="w-3 h-3 animate-spin" />}
+            Refresh
+          </Button>
         </div>
 
         <div className={isFetching ? 'opacity-50 transition-opacity' : 'transition-opacity'}>
           <TaskList tasks={tasks} onRefresh={() => queryClient.invalidateQueries({ queryKey: ['tasks'] })} />
         </div>
 
-        {/* Pagination Controls */}
         <div className="flex items-center justify-between text-sm py-4">
           <div className="text-muted-foreground">
             Page {meta.page} of {meta.totalPages}

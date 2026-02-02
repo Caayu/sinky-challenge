@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 
-import { TaskResponse, createTaskSchema } from '@repo/shared'
+import { TaskResponse, createTaskSchema, TaskCategory, TaskPriority } from '@repo/shared'
 import { Loader2 } from 'lucide-react'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 
@@ -38,8 +38,8 @@ export function TaskForm({ initialData, onSubmit, isPending, submitLabel = 'Save
     defaultValues: {
       title: initialData?.title ?? '',
       description: initialData?.description ?? '',
-      category: (initialData?.category as any) ?? 'WORK',
-      priority: (initialData?.priority as any) ?? 'MEDIUM',
+      category: (initialData?.category as FormValues['category']) ?? 'WORK',
+      priority: (initialData?.priority as FormValues['priority']) ?? 'MEDIUM',
       // Format date for datetime-local input: YYYY-MM-DDTHH:mm
       suggestedDeadline: initialData?.suggestedDeadline
         ? new Date(initialData.suggestedDeadline).toISOString().slice(0, 16)
@@ -99,11 +99,11 @@ export function TaskForm({ initialData, onSubmit, isPending, submitLabel = 'Save
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="WORK">Work</SelectItem>
-                    <SelectItem value="PERSONAL">Personal</SelectItem>
-                    <SelectItem value="SHOPPING">Shopping</SelectItem>
-                    <SelectItem value="HEALTH">Health</SelectItem>
-                    <SelectItem value="FINANCE">Finance</SelectItem>
+                    {Object.values(TaskCategory).map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category.charAt(0) + category.slice(1).toLowerCase()}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />
@@ -124,10 +124,11 @@ export function TaskForm({ initialData, onSubmit, isPending, submitLabel = 'Save
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="LOW">Low</SelectItem>
-                    <SelectItem value="MEDIUM">Medium</SelectItem>
-                    <SelectItem value="HIGH">High</SelectItem>
-                    <SelectItem value="CRITICAL">Critical</SelectItem>
+                    {Object.values(TaskPriority).map((priority) => (
+                      <SelectItem key={priority} value={priority}>
+                        {priority.charAt(0) + priority.slice(1).toLowerCase()}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
                 <FormMessage />

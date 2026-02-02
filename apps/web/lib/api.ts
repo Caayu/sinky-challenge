@@ -1,4 +1,4 @@
-import { AiTaskResponse, TaskResponse, PaginatedResponse } from '@repo/shared'
+import { AiTaskResponse, TaskResponse, PaginatedResponse, CreateTaskInput, UpdateTaskInput } from '@repo/shared'
 
 const API_URL = 'http://localhost:3000'
 
@@ -40,7 +40,7 @@ export async function getTask(id: string): Promise<TaskResponse> {
   return res.json()
 }
 
-export async function createTask(data: any): Promise<TaskResponse> {
+export async function createTask(data: CreateTaskInput): Promise<TaskResponse> {
   const res = await fetch(`${API_URL}/tasks`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -50,7 +50,7 @@ export async function createTask(data: any): Promise<TaskResponse> {
   return res.json()
 }
 
-export async function updateTask(id: string, data: any): Promise<TaskResponse> {
+export async function updateTask(id: string, data: UpdateTaskInput): Promise<TaskResponse> {
   const res = await fetch(`${API_URL}/tasks/${id}`, {
     method: 'PATCH',
     headers: { 'Content-Type': 'application/json' },

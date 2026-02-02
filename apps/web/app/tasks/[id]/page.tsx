@@ -3,7 +3,8 @@
 import { useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { getTask, updateTask, deleteTask, completeTask } from '@/lib/api'
+import { getTask, updateTask } from '@/lib/api'
+import { useTaskActions } from '@/hooks/use-task-actions'
 import { TaskForm } from '@/components/task-form'
 import {
   Loader2,
@@ -73,32 +74,13 @@ export default function TaskPage() {
     }
   })
 
-  // Toggle completion status
-  const { mutate: toggleComplete } = useMutation({
-    mutationFn: async () => {
-      if (task?.isCompleted) {
-        return updateTask(id, { isCompleted: false })
-      } else {
-        return completeTask(id)
-      }
-    },
-    onSuccess: (data) => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] })
-      queryClient.invalidateQueries({ queryKey: ['task', id] })
-      toast.success(task?.isCompleted ? 'Task marked as pending' : 'Task completed! 🎉')
-    },
-    onError: () => toast.error('Failed to toggle status')
-  })
-
-  const { mutate: doDelete } = useMutation({
-    mutationFn: () => deleteTask(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['tasks'] })
-      toast.success('Task deleted')
-      router.replace('/')
-    },
-    onError: () => toast.error('Failed to delete task')
-  })
+  const { toggleComplete, deleteTask } = useTaskActions()
+  // Add redirect logic for delete here, since hook is generic
+  const handleDelete = () => {
+    deleteTask(id, {
+      onSuccess: () => router.replace('/')
+    })
+  }
 
   if (isLoading) {
     return (
@@ -145,7 +127,7 @@ export default function TaskPage() {
                   <AlertDialogFooter>
                     <AlertDialogCancel>Cancel</AlertDialogCancel>
                     <AlertDialogAction
-                      onClick={() => doDelete()}
+                      onClick={() => handleDelete()}
                       className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
                     >
                       Delete
@@ -196,7 +178,7 @@ export default function TaskPage() {
             <Button
               variant={task.isCompleted ? 'secondary' : 'default'}
               className="gap-2 min-w-[140px]"
-              onClick={() => toggleComplete()}
+              onClick={() => toggleComplete(task)}
             >
               {task.isCompleted ? (
                 <>
@@ -236,7 +218,10 @@ export default function TaskPage() {
                     <h3 className="text-xs font-semibold mb-1 flex items-center gap-2">
                       <BriefcaseIcon category={task.category} /> Category
                     </h3>
-                    <Badge variant="secondary" className={`${categoryColors[task.category ?? ''] || ''} border-0`}>
+                    <Badge
+                      variant="secondary"
+                      className={`${task.category ? categoryColors[task.category] : ''} border-0`}
+                    >
                       {task.category || 'None'}
                     </Badge>
                   </div>
@@ -245,7 +230,10 @@ export default function TaskPage() {
                     <h3 className="text-xs font-semibold mb-1 flex items-center gap-2">
                       <AlertTriangle className="w-3 h-3" /> Priority
                     </h3>
-                    <Badge variant="secondary" className={`${priorityColors[task.priority ?? ''] || ''} border-0`}>
+                    <Badge
+                      variant="secondary"
+                      className={`${task.priority ? priorityColors[task.priority] : ''} border-0`}
+                    >
                       {task.priority || 'None'}
                     </Badge>
                   </div>
