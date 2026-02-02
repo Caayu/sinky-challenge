@@ -4,6 +4,7 @@ import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai'
 import { AiTaskResponse, AiTaskResponseSchema } from '@repo/shared'
 import { z } from 'zod'
 import { AiQuotaExceededError, AiGenerationError } from './domain/errors'
+import sanitizeHtml from 'sanitize-html'
 
 @Injectable()
 export class AiService {
@@ -26,7 +27,8 @@ export class AiService {
   }
 
   async enhanceTask(text: string): Promise<AiTaskResponse> {
-    if (text.length > 500) {
+    const sanitizedText = sanitizeHtml(text)
+    if (sanitizedText.length > 500) {
       throw new BadRequestException('Texto muito longo para processar (máx: 500 caracteres).')
     }
     try {
@@ -36,7 +38,7 @@ export class AiService {
         Retorne APENAS o JSON estrito seguindo o schema.
         
         Current Date (ISO): ${now}
-        Raw Text: "${text}"
+        Raw Text: "${sanitizedText}"
 
         Output JSON format (strict schema):
         {
@@ -66,10 +68,15 @@ export class AiService {
   }
 
   async suggestSubtasks(title: string): Promise<AiTaskResponse[]> {
+    const sanitizedTitle = sanitizeHtml(title)
+    if (sanitizedTitle.length > 500) {
+      throw new BadRequestException('Título muito longo para processar (máx: 500 caracteres).')
+    }
+
     try {
       const now = new Date().toISOString()
       const prompt = `
-        You are a productivity expert. Break down the task "${title}" into 3-5 actionable subtasks.
+        You are a productivity expert. Break down the task "${sanitizedTitle}" into 3-5 actionable subtasks.
         Return ONLY a JSON array of objects following the strict schema below.
 
         Current Date (ISO): ${now}
