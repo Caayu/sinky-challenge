@@ -64,7 +64,7 @@ export class AiService {
         }
       `
 
-      const result = await this.model.generateContent(prompt)
+      const result = await this.model.generateContent(prompt, { timeout: 30000 })
       const response = await result.response
       const textResponse = response.text()
 
@@ -110,7 +110,7 @@ export class AiService {
           }
         ]
       `
-      const result = await this.model.generateContent(prompt)
+      const result = await this.model.generateContent(prompt, { timeout: 30000 })
       const response = await result.response
       const textResponse = response.text()
 
