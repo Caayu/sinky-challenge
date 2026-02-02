@@ -65,6 +65,9 @@ importers:
       drizzle-orm:
         specifier: ^0.45.1
         version: 0.45.1(@types/better-sqlite3@7.6.13)(better-sqlite3@12.6.2)
+      express:
+        specifier: ^5.2.1
+        version: 5.2.1
       nestjs-zod:
         specifier: ^5.1.1
         version: 5.1.1(@nestjs/common@11.1.11)(@nestjs/swagger@11.2.5)(rxjs@7.8.2)(zod@3.25.76)

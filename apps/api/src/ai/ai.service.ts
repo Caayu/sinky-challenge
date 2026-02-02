@@ -1,5 +1,4 @@
-import { Injectable, InternalServerErrorException, Logger, BadRequestException } from '@nestjs/common'
-import { ConfigService } from '@nestjs/config'
+import { Injectable, Logger, BadRequestException } from '@nestjs/common'
 import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai'
 import { AiTaskResponse, AiTaskResponseSchema } from '@repo/shared'
 import { z } from 'zod'
@@ -9,18 +8,14 @@ import sanitizeHtml from 'sanitize-html'
 @Injectable()
 export class AiService {
   private readonly logger = new Logger(AiService.name)
-  private readonly genAI: GoogleGenerativeAI
-  private readonly model: GenerativeModel
 
-  constructor(private readonly configService: ConfigService) {
-    const apiKey = this.configService.get<string>('GEMINI_API_KEY')
-    if (!apiKey) {
-      this.logger.error('GEMINI_API_KEY is not defined')
-      throw new InternalServerErrorException('AI Service configuration error')
+  private getModel(apiKey: string): GenerativeModel {
+    if (!apiKey || !apiKey.startsWith('AIza')) {
+      throw new BadRequestException('Invalid API Key provided.')
     }
 
-    this.genAI = new GoogleGenerativeAI(apiKey)
-    this.model = this.genAI.getGenerativeModel({
+    const genAI = new GoogleGenerativeAI(apiKey.trim())
+    return genAI.getGenerativeModel({
       model: 'gemini-flash-latest',
       systemInstruction: `
         You are an elite productivity assistant named Sinky. 
@@ -37,12 +32,13 @@ export class AiService {
     })
   }
 
-  async enhanceTask(text: string): Promise<AiTaskResponse> {
+  async enhanceTask(text: string, apiKey: string): Promise<AiTaskResponse> {
     const sanitizedText = sanitizeHtml(text)
     if (sanitizedText.length > 500) {
       throw new BadRequestException('Text too long to process (max: 500 characters).')
     }
     try {
+      const model = this.getModel(apiKey)
       const now = new Date().toISOString()
       const prompt = `
         Analyze the text and current date to infer deadlines and details.
@@ -64,14 +60,21 @@ export class AiService {
         }
       `
 
-      const result = await this.model.generateContent(prompt, { timeout: 30000 })
+      console.log('--- SENDING PROMPT TO GEMINI ---')
+      console.log(prompt)
+      console.log('--- API KEY USED:', apiKey ? apiKey.substring(0, 10) + '...' : 'UNDEFINED')
+      console.log('--- MODEL:', 'gemini-flash-latest')
+
+      const result = await model.generateContent(prompt, { timeout: 30000 })
       const response = await result.response
       const textResponse = response.text()
 
       const parsed = JSON.parse(textResponse)
       return AiTaskResponseSchema.parse(parsed)
     } catch (error: any) {
-      this.logger.error('Failed to enhance task', error instanceof Error ? error.stack : error)
+      this.logger.error('Failed to enhance task', error)
+      console.log('Gemini Error Message:', error.message)
+      console.log('Gemini Error Details:', JSON.stringify(error, null, 2))
 
       if (error.message?.includes('429') || error.message?.includes('Resource exhausted')) {
         throw new AiQuotaExceededError()
@@ -81,13 +84,14 @@ export class AiService {
     }
   }
 
-  async suggestSubtasks(title: string): Promise<AiTaskResponse[]> {
+  async suggestSubtasks(title: string, apiKey: string): Promise<AiTaskResponse[]> {
     const sanitizedTitle = sanitizeHtml(title)
     if (sanitizedTitle.length > 500) {
       throw new BadRequestException('Title too long to process (max: 500 characters).')
     }
 
     try {
+      const model = this.getModel(apiKey)
       const now = new Date().toISOString()
       const prompt = `
         Break down the task provided below into 3-5 actionable subtasks.
@@ -110,7 +114,7 @@ export class AiService {
           }
         ]
       `
-      const result = await this.model.generateContent(prompt, { timeout: 30000 })
+      const result = await model.generateContent(prompt, { timeout: 30000 })
       const response = await result.response
       const textResponse = response.text()
 

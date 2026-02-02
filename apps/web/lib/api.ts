@@ -75,22 +75,34 @@ export async function deleteTask(id: string): Promise<void> {
   if (!res.ok) throw new Error('Failed to delete task')
 }
 
-export async function enhanceTask(text: string): Promise<AiTaskResponse> {
+export async function enhanceTask(text: string, apiKey: string): Promise<AiTaskResponse> {
   const res = await fetch(`${API_URL}/ai/enhance`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey
+    },
     body: JSON.stringify({ text })
   })
-  if (!res.ok) throw new Error('Failed to enhance task')
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({ message: 'Failed to enhance task' }))
+    throw new Error(error.message || 'Failed to enhance task')
+  }
   return res.json()
 }
 
-export async function generateSubtasks(text: string): Promise<AiTaskResponse[]> {
+export async function generateSubtasks(text: string, apiKey: string): Promise<AiTaskResponse[]> {
   const res = await fetch(`${API_URL}/ai/tasks`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'x-api-key': apiKey
+    },
     body: JSON.stringify({ title: text })
   })
-  if (!res.ok) throw new Error('Failed to generate subtasks')
+  if (!res.ok) {
+    const error = await res.json().catch(() => ({ message: 'Failed to generate subtasks' }))
+    throw new Error(error.message || 'Failed to generate subtasks')
+  }
   return res.json()
 }

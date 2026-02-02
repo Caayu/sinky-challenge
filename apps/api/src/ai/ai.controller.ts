@@ -1,4 +1,4 @@
-import { Body, Controller, Post } from '@nestjs/common'
+import { Body, Controller, Post, Headers } from '@nestjs/common'
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger'
 import { AiService } from './ai.service'
 import { EnhanceTaskDto, EnhancedTaskResponseDto } from './dto/enhance-task.dto'
@@ -17,8 +17,8 @@ export class AiController {
   @Post('enhance')
   @ApiOperation({ summary: 'Enhance raw text into a structured task' })
   @ApiResponse({ status: 201, description: 'Task enhanced successfully', type: EnhancedTaskResponseDto })
-  async enhance(@Body() dto: EnhanceTaskDto): Promise<AiTaskResponse> {
-    const enhanced = await this.aiService.enhanceTask(dto.text)
+  async enhance(@Body() dto: EnhanceTaskDto, @Headers('x-api-key') apiKey: string): Promise<AiTaskResponse> {
+    const enhanced = await this.aiService.enhanceTask(dto.text, apiKey)
 
     // Automatic creation
     await this.createTaskUseCase.execute({
@@ -35,8 +35,8 @@ export class AiController {
   @Post('tasks')
   @ApiOperation({ summary: 'Suggest and create subtasks for a given title' })
   @ApiResponse({ status: 201, description: 'Subtasks created successfully', type: [EnhancedTaskResponseDto] })
-  async createTasks(@Body() dto: SuggestSubtasksDto): Promise<AiTaskResponse[]> {
-    const aiResponse = await this.aiService.suggestSubtasks(dto.title)
+  async createTasks(@Body() dto: SuggestSubtasksDto, @Headers('x-api-key') apiKey: string): Promise<AiTaskResponse[]> {
+    const aiResponse = await this.aiService.suggestSubtasks(dto.title, apiKey)
 
     // Automatic creation
     for (const task of aiResponse) {

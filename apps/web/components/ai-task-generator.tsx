@@ -22,9 +22,9 @@ export function AiTaskGenerator({ onTaskCreated }: { onTaskCreated: () => void }
   const { mutate, isPending } = useMutation({
     mutationFn: async () => {
       if (isSubtasks) {
-        return generateSubtasks(prompt)
+        return generateSubtasks(prompt, apiKey)
       } else {
-        return enhanceTask(prompt)
+        return enhanceTask(prompt, apiKey)
       }
     },
     onSuccess: () => {
@@ -35,7 +35,7 @@ export function AiTaskGenerator({ onTaskCreated }: { onTaskCreated: () => void }
     },
     onError: (error) => {
       console.error(error)
-      toast.error('Failed to generate task(s)')
+      toast.error(error instanceof Error ? error.message : 'Failed to generate task(s)')
     }
   })
 
@@ -57,24 +57,22 @@ export function AiTaskGenerator({ onTaskCreated }: { onTaskCreated: () => void }
   }, [isPending])
 
   const handleGenerate = () => {
-    if (!prompt) return
+    if (!prompt || !apiKey) return
     mutate()
   }
 
   return (
     <div className="space-y-4 p-4 border rounded-lg bg-card text-card-foreground">
       <div className="space-y-2">
-        <Label htmlFor="apiKey">Gemini API Key (Optional)</Label>
+        <Label htmlFor="apiKey">Gemini API Key (Required)</Label>
         <Input
           id="apiKey"
           type="password"
           value={apiKey}
           onChange={(e) => setApiKey(e.target.value)}
-          placeholder="Leave empty to use server configuration"
+          placeholder="Paste your Gemini API Key here (starts with AIza)"
         />
-        <p className="text-xs text-muted-foreground">
-          If provided, this key will override the server&apos;s default key (Not implemented on backend yet).
-        </p>
+        <p className="text-xs text-muted-foreground">The key is sent securely in headers and never logged.</p>
       </div>
 
       <div className="space-y-2">
@@ -102,7 +100,7 @@ export function AiTaskGenerator({ onTaskCreated }: { onTaskCreated: () => void }
         </div>
       )}
 
-      <Button onClick={handleGenerate} className="w-full" disabled={isPending || !prompt}>
+      <Button onClick={handleGenerate} className="w-full" disabled={isPending || !prompt || !apiKey}>
         {isPending ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
