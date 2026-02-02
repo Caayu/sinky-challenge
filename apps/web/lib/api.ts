@@ -1,6 +1,13 @@
 import { AiTaskResponse, TaskResponse, PaginatedResponse, CreateTaskInput, UpdateTaskInput } from '@repo/shared'
 
-const API_URL = 'http://localhost:3000'
+const API_URL =
+  typeof window === 'undefined'
+    ? process.env.INTERNAL_API_URL || process.env.NEXT_PUBLIC_API_URL
+    : process.env.NEXT_PUBLIC_API_URL
+
+if (!API_URL) {
+  throw new Error('API_URL is not defined')
+}
 
 export async function fetchTasks({
   page = 1,
