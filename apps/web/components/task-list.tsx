@@ -1,14 +1,6 @@
-'use client'
-
 import { useState } from 'react'
-import Link from 'next/link'
 import { TaskResponse } from '@repo/shared'
-import { Checkbox } from '@/components/ui/checkbox'
-import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Card, CardContent } from '@/components/ui/card'
 import { completeTask, deleteTask, updateTask } from '@/lib/api'
-import { Trash2, Calendar, Clock } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   AlertDialog,
@@ -21,8 +13,7 @@ import {
   AlertDialogTitle
 } from '@/components/ui/alert-dialog'
 import { useMutation } from '@tanstack/react-query'
-
-import { priorityColors, categoryColors } from '@/lib/constants'
+import { TaskCard } from './task-card'
 
 export function TaskList({ tasks, onRefresh }: { tasks: TaskResponse[]; onRefresh: () => void }) {
   const [deleteId, setDeleteId] = useState<string | null>(null)
@@ -70,57 +61,7 @@ export function TaskList({ tasks, onRefresh }: { tasks: TaskResponse[]; onRefres
     <>
       <div className="space-y-3">
         {tasks.map((task, index) => (
-          <Card
-            key={task.id}
-            className="overflow-hidden transition-all duration-300 hover:shadow-md hover:border-primary/50 animate-in fade-in slide-in-from-bottom-4"
-            style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'both' }}
-          >
-            <CardContent className="p-4 flex items-center gap-3">
-              <Checkbox checked={task.isCompleted} onCheckedChange={() => toggleTask(task)} />
-
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <Link href={`/tasks/${task.id}`} className="hover:underline">
-                    <span
-                      className={`font-medium truncate ${task.isCompleted ? 'line-through text-muted-foreground' : ''}`}
-                    >
-                      {task.title}
-                    </span>
-                  </Link>
-                  {task.priority && (
-                    <Badge variant="outline" className={`text-xs border-0 ${priorityColors[task.priority] || ''}`}>
-                      {task.priority}
-                    </Badge>
-                  )}
-                  {task.category && (
-                    <Badge variant="outline" className={`text-xs border-0 ${categoryColors[task.category] || ''}`}>
-                      {task.category}
-                    </Badge>
-                  )}
-                </div>
-
-                {task.description && <p className="text-sm text-muted-foreground mt-1 truncate">{task.description}</p>}
-
-                {task.suggestedDeadline && (
-                  <div className="flex items-center text-xs text-muted-foreground mt-2 gap-1">
-                    <Calendar className="w-3 h-3" />
-                    {new Date(task.suggestedDeadline).toLocaleDateString()}
-                    <Clock className="w-3 h-3 ml-2" />
-                    {new Date(task.suggestedDeadline).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </div>
-                )}
-              </div>
-
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setDeleteId(task.id)}
-                className="text-destructive hover:text-destructive/90 hover:bg-destructive/10"
-              >
-                <Trash2 className="w-4 h-4" />
-              </Button>
-            </CardContent>
-          </Card>
+          <TaskCard key={task.id} task={task} index={index} onToggle={toggleTask} onDelete={setDeleteId} />
         ))}
       </div>
 

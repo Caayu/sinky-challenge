@@ -1,114 +1,160 @@
-'use client'
-
-import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Label } from '@/components/ui/label'
-import { TaskResponse } from '@repo/shared'
+
+import { TaskResponse, createTaskSchema } from '@repo/shared'
 import { Loader2 } from 'lucide-react'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+
+// We need to extend/refine the schema for the form because the shared schema might expect Date objects or strings differently than the form input
+// actually mostly compatible. Let's see.
+// The shared CreateTaskSchema likely expects strings for enums.
+// For the form, deadline is a string from input type="datetime-local"
+
+const FormSchema = createTaskSchema.extend({
+  suggestedDeadline: z
+    .string()
+    .optional()
+    .nullable()
+    .transform((val) => (val === '' ? null : val))
+})
+
+type FormValues = z.infer<typeof FormSchema>
 
 interface TaskFormProps {
   initialData?: TaskResponse
-  onSubmit: (data: {
-    title: string
-    description?: string
-    category?: string
-    priority?: string
-    suggestedDeadline?: string | null
-  }) => void
+  onSubmit: (data: FormValues) => void
   isPending: boolean
   submitLabel?: string
 }
 
 export function TaskForm({ initialData, onSubmit, isPending, submitLabel = 'Save' }: TaskFormProps) {
-  const [title, setTitle] = useState(initialData?.title ?? '')
-  const [description, setDescription] = useState(initialData?.description ?? '')
-  const [category, setCategory] = useState<string | undefined>(initialData?.category ?? 'WORK')
-  const [priority, setPriority] = useState<string | undefined>(initialData?.priority ?? 'MEDIUM')
-  const [deadline, setDeadline] = useState(
-    initialData?.suggestedDeadline ? new Date(initialData.suggestedDeadline).toISOString().slice(0, 16) : ''
-  )
+  const form = useForm<FormValues>({
+    resolver: zodResolver(FormSchema),
+    defaultValues: {
+      title: initialData?.title ?? '',
+      description: initialData?.description ?? '',
+      category: (initialData?.category as any) ?? 'WORK',
+      priority: (initialData?.priority as any) ?? 'MEDIUM',
+      // Format date for datetime-local input: YYYY-MM-DDTHH:mm
+      suggestedDeadline: initialData?.suggestedDeadline
+        ? new Date(initialData.suggestedDeadline).toISOString().slice(0, 16)
+        : ''
+    }
+  })
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!title) return
-
-    onSubmit({
-      title,
-      description,
-      category,
-      priority,
-      suggestedDeadline: deadline || null
-    })
+  const handleSubmit = (values: FormValues) => {
+    onSubmit(values)
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 p-4 border rounded-lg bg-card text-card-foreground">
-      <div className="space-y-2">
-        <Label htmlFor="title">Title</Label>
-        <Input
-          id="title"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          placeholder="Ex: Finish report"
-          required
+    <Form {...form}>
+      <form
+        onSubmit={form.handleSubmit(handleSubmit)}
+        className="space-y-4 p-4 border rounded-lg bg-card text-card-foreground"
+      >
+        <FormField
+          control={form.control}
+          name="title"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Title</FormLabel>
+              <FormControl>
+                <Input placeholder="Ex: Finish report" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="description">Description</Label>
-        <Textarea
-          id="description"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Optional details..."
+        <FormField
+          control={form.control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Description</FormLabel>
+              <FormControl>
+                <Textarea placeholder="Optional details..." {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
         />
-      </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <div className="space-y-2">
-          <Label htmlFor="category">Category</Label>
-          <Select value={category} onValueChange={setCategory}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="WORK">Work</SelectItem>
-              <SelectItem value="PERSONAL">Personal</SelectItem>
-              <SelectItem value="SHOPPING">Shopping</SelectItem>
-              <SelectItem value="HEALTH">Health</SelectItem>
-              <SelectItem value="FINANCE">Finance</SelectItem>
-            </SelectContent>
-          </Select>
+        <div className="grid grid-cols-2 gap-4">
+          <FormField
+            control={form.control}
+            name="category"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Category</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select category" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="WORK">Work</SelectItem>
+                    <SelectItem value="PERSONAL">Personal</SelectItem>
+                    <SelectItem value="SHOPPING">Shopping</SelectItem>
+                    <SelectItem value="HEALTH">Health</SelectItem>
+                    <SelectItem value="FINANCE">Finance</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="priority"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Priority</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select priority" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="LOW">Low</SelectItem>
+                    <SelectItem value="MEDIUM">Medium</SelectItem>
+                    <SelectItem value="HIGH">High</SelectItem>
+                    <SelectItem value="CRITICAL">Critical</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="priority">Priority</Label>
-          <Select value={priority} onValueChange={setPriority}>
-            <SelectTrigger>
-              <SelectValue placeholder="Select priority" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="LOW">Low</SelectItem>
-              <SelectItem value="MEDIUM">Medium</SelectItem>
-              <SelectItem value="HIGH">High</SelectItem>
-              <SelectItem value="CRITICAL">Critical</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+        <FormField
+          control={form.control}
+          name="suggestedDeadline"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Deadline</FormLabel>
+              <FormControl>
+                <Input type="datetime-local" {...field} value={field.value || ''} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-      <div className="space-y-2">
-        <Label htmlFor="deadline">Deadline</Label>
-        <Input id="deadline" type="datetime-local" value={deadline} onChange={(e) => setDeadline(e.target.value)} />
-      </div>
-
-      <Button type="submit" className="w-full" disabled={isPending}>
-        {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-        {isPending ? 'Saving...' : submitLabel}
-      </Button>
-    </form>
+        <Button type="submit" className="w-full" disabled={isPending}>
+          {isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+          {isPending ? 'Saving...' : submitLabel}
+        </Button>
+      </form>
+    </Form>
   )
 }
