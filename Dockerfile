@@ -21,11 +21,8 @@ RUN pnpm turbo build --filter=api...
 # Vai pra pasta da API
 WORKDIR /app/apps/api
 
-# Cria diretório para dados persistentes e dá permissões
-RUN mkdir -p /data && chmod 777 /data
-
-# Define variável de ambiente para o banco
-ENV DATABASE_URL="file:/data/sqlite.db"
+# /tmp sempre tem permissão de escrita (mas é efêmero)
+ENV DATABASE_URL="file:/tmp/sqlite.db"
 
 # Expõe porta
 EXPOSE 3000
