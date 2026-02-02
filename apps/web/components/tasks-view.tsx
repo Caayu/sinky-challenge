@@ -53,9 +53,9 @@ export function TasksView({ initialData }: { initialData: PaginatedResponse<Task
         page,
         limit,
         search: debouncedSearch,
-        status,
-        priority,
-        category,
+        status: status === 'ALL' ? undefined : status,
+        priority: priority === 'ALL' ? undefined : priority,
+        category: category === 'ALL' ? undefined : category,
         sort
       }),
     placeholderData: keepPreviousData,

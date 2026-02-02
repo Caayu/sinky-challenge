@@ -60,11 +60,6 @@ export class AiService {
         }
       `
 
-      console.log('--- SENDING PROMPT TO GEMINI ---')
-      console.log(prompt)
-      console.log('--- API KEY USED:', apiKey ? apiKey.substring(0, 10) + '...' : 'UNDEFINED')
-      console.log('--- MODEL:', 'gemini-flash-latest')
-
       const result = await model.generateContent(prompt, { timeout: 30000 })
       const response = await result.response
       const textResponse = response.text()
@@ -73,8 +68,6 @@ export class AiService {
       return AiTaskResponseSchema.parse(parsed)
     } catch (error: any) {
       this.logger.error('Failed to enhance task', error)
-      console.log('Gemini Error Message:', error.message)
-      console.log('Gemini Error Details:', JSON.stringify(error, null, 2))
 
       if (error.message?.includes('429') || error.message?.includes('Resource exhausted')) {
         throw new AiQuotaExceededError()
