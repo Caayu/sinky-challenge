@@ -59,7 +59,8 @@
     "details": "Details",
     "created": "Created",
     "failedLoad": "Failed to load task",
-    "updateSuccess": "Task updated successfully"
+    "updateSuccess": "Task updated successfully",
+    "markUncomplete": "Mark Uncomplete"
   },
   "Enums": {
     "Status": {

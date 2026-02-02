@@ -59,7 +59,8 @@
     "details": "Detalhes",
     "created": "Criada",
     "failedLoad": "Falha ao carregar tarefa",
-    "updateSuccess": "Tarefa atualizada com sucesso"
+    "updateSuccess": "Tarefa atualizada com sucesso",
+    "markUncomplete": "Desmarcar"
   },
   "Enums": {
     "Status": {

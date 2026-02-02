@@ -116,16 +116,16 @@ export function TasksView({ initialData }: { initialData: PaginatedResponse<Task
       </div>
 
       <div className="md:col-span-2 space-y-4">
-        <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+        <div className="flex flex-col gap-4">
           <Input
             placeholder={t('searchPlaceholder')}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full md:w-64"
+            className="w-full"
           />
-          <div className="flex items-center gap-2 w-full md:w-auto overflow-x-auto pb-2 md:pb-0">
+          <div className="flex flex-wrap items-center gap-2 w-full">
             <Select value={status} onValueChange={setStatus}>
-              <SelectTrigger className="w-[120px]">
+              <SelectTrigger className="flex-1 min-w-[120px]">
                 <SelectValue placeholder={t('statusPlaceholder')} />
               </SelectTrigger>
               <SelectContent>
@@ -136,7 +136,7 @@ export function TasksView({ initialData }: { initialData: PaginatedResponse<Task
             </Select>
 
             <Select value={priority} onValueChange={setPriority}>
-              <SelectTrigger className="w-[120px]">
+              <SelectTrigger className="flex-1 min-w-[120px]">
                 <SelectValue placeholder={t('priorityPlaceholder')} />
               </SelectTrigger>
               <SelectContent>
@@ -150,7 +150,7 @@ export function TasksView({ initialData }: { initialData: PaginatedResponse<Task
             </Select>
 
             <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger className="w-[130px]">
+              <SelectTrigger className="flex-1 min-w-[130px]">
                 <SelectValue placeholder={t('categoryPlaceholder')} />
               </SelectTrigger>
               <SelectContent>
@@ -164,7 +164,7 @@ export function TasksView({ initialData }: { initialData: PaginatedResponse<Task
             </Select>
 
             <Select value={sort} onValueChange={setSort}>
-              <SelectTrigger className="w-[130px]">
+              <SelectTrigger className="flex-1 min-w-[130px]">
                 <SelectValue placeholder={t('sortBy')} />
               </SelectTrigger>
               <SelectContent>

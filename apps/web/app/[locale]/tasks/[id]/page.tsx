@@ -36,7 +36,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger
 } from '@/components/ui/alert-dialog'
-import { priorityColors, categoryColors } from '@/lib/constants'
+import { priorityColors } from '@/lib/constants'
 import { UpdateTaskInput } from '@repo/shared'
 
 // Note: Ensure consistent Date format handling
@@ -44,9 +44,6 @@ import { UpdateTaskInput } from '@repo/shared'
 
 export default function TaskPage() {
   const router = useRouter()
-  // useParams handles generic params in Client Component, but we need to ensure we use the right hook if from next-intl
-  // Actually i18n/routing doesn't export useParams. But we can use next/navigation's useParams
-  // because typically we only need locale from it or the id.
   const params = useParams()
   const id = params?.id as string
   const queryClient = useQueryClient()
@@ -66,7 +63,6 @@ export default function TaskPage() {
     enabled: !!id
   })
 
-  // Fixed: typed update call
   const { mutate: doUpdate, isPending: isUpdating } = useMutation({
     mutationFn: (data: UpdateTaskInput) => updateTask(id, data),
     onSuccess: () => {
@@ -82,7 +78,6 @@ export default function TaskPage() {
   })
 
   const { toggleComplete, deleteTask } = useTaskActions()
-  // Add redirect logic for delete here, since hook is generic
   const handleDelete = () => {
     deleteTask(id, {
       onSuccess: () => router.replace('/')
@@ -92,7 +87,7 @@ export default function TaskPage() {
   if (isLoading) {
     return (
       <div className="flex justify-center items-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin" />
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     )
   }
@@ -100,7 +95,7 @@ export default function TaskPage() {
   if (error || !task) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen gap-4">
-        <p className="text-destructive">{t('failedLoad')}</p>
+        <p className="text-destructive font-medium">{t('failedLoad')}</p>
         <Button onClick={() => router.back()}>{t('goBack')}</Button>
       </div>
     )
@@ -108,69 +103,93 @@ export default function TaskPage() {
 
   return (
     <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="container max-w-3xl mx-auto py-8 space-y-6"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="container max-w-5xl mx-auto py-8 lg:py-12 space-y-8"
     >
+      {/* Navigation & Actions Header */}
       <div className="flex items-center justify-between">
-        <Button variant="ghost" onClick={() => router.back()} className="gap-2 shrink-0">
-          <ArrowLeft className="w-4 h-4" /> {t('back')}
+        <Button
+          variant="ghost"
+          onClick={() => router.back()}
+          className="group text-muted-foreground hover:text-foreground pl-0 hover:bg-transparent"
+        >
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-full transition-colors group-hover:bg-muted/50">
+            <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" />
+            <span className="font-medium">{t('back')}</span>
+          </div>
         </Button>
 
         <div className="flex gap-2">
-          {!isEditing && (
-            <>
-              <Button variant="outline" onClick={() => setIsEditing(true)}>
-                <Pencil className="w-4 h-4 mr-2" /> {t('edit')}
-              </Button>
+          <AnimatePresence mode="wait">
+            {!isEditing && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+                className="flex gap-2"
+              >
+                <Button variant="outline" size="sm" onClick={() => setIsEditing(true)} className="shadow-sm">
+                  <Pencil className="w-3.5 h-3.5 mr-2" /> {t('edit')}
+                </Button>
 
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive" size="icon">
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>{t('deleteTaskMethod')}</AlertDialogTitle>
-                    <AlertDialogDescription>{t('deleteTaskDescription')}</AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
-                    <AlertDialogAction
-                      onClick={() => handleDelete()}
-                      className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                <AlertDialog>
+                  <AlertDialogTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="text-destructive hover:bg-destructive/10 hover:text-destructive"
                     >
-                      {t('delete')}
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </>
-          )}
-          {isEditing && (
-            <Button variant="ghost" onClick={() => setIsEditing(false)}>
-              {t('cancel')}
-            </Button>
-          )}
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </AlertDialogTrigger>
+                  <AlertDialogContent>
+                    <AlertDialogHeader>
+                      <AlertDialogTitle>{t('deleteTaskMethod')}</AlertDialogTitle>
+                      <AlertDialogDescription>{t('deleteTaskDescription')}</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                      <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
+                      <AlertDialogAction
+                        onClick={() => handleDelete()}
+                        className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                      >
+                        {t('delete')}
+                      </AlertDialogAction>
+                    </AlertDialogFooter>
+                  </AlertDialogContent>
+                </AlertDialog>
+              </motion.div>
+            )}
+            {isEditing && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.9 }}
+              >
+                <Button variant="ghost" size="sm" onClick={() => setIsEditing(false)}>
+                  {t('cancel')}
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
-      {/* Edit Mode */}
       <AnimatePresence mode="wait">
         {isEditing ? (
           <motion.div
             key="edit-mode"
-            initial={{ opacity: 0, scale: 0.95 }}
-            animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.95 }}
-            transition={{ duration: 0.2 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3 }}
           >
-            <Card>
-              <CardHeader>
-                <CardTitle>{t('edit')}</CardTitle>
+            <Card className="border-primary/20 shadow-xl bg-card/50 backdrop-blur-sm">
+              <CardHeader className="border-b bg-muted/20 pb-6">
+                <CardTitle className="text-2xl text-primary font-bold">{t('edit')}</CardTitle>
               </CardHeader>
-              <CardContent>
+              <CardContent className="pt-8 px-6 lg:px-8">
                 <TaskForm
                   initialData={task}
                   onSubmit={(data) => doUpdate(data)}
@@ -181,106 +200,175 @@ export default function TaskPage() {
             </Card>
           </motion.div>
         ) : (
-          /* View Mode */
           <motion.div
             key="view-mode"
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2 }}
-            className="space-y-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="space-y-10"
           >
-            <div className="flex flex-col md:flex-row gap-4 md:items-start justify-between">
-              <div className="space-y-2">
-                <h1 className={`text-3xl font-bold ${task.isCompleted ? 'line-through text-muted-foreground' : ''}`}>
-                  {task.title}
-                </h1>
-                <div className="flex flex-wrap gap-2 text-sm text-muted-foreground">
-                  <span className="flex items-center gap-1">
-                    <Clock className="w-3 h-3" /> {t('created')}{' '}
-                    {format.dateTime(new Date(task.createdAt), { dateStyle: 'medium' })}
-                  </span>
+            {/* Hero Section */}
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-card to-muted/50 border shadow-sm p-6 lg:p-8">
+              <div className="relative z-10 flex flex-col gap-6">
+                <div className="flex flex-wrap items-center gap-3">
+                  <Badge
+                    variant={task.isCompleted ? 'default' : 'secondary'}
+                    className={`text-sm px-3 py-1 rounded-full ${task.isCompleted ? 'bg-green-600 hover:bg-green-700 shadow-green-200 dark:shadow-green-900 shadow-sm' : 'bg-secondary text-secondary-foreground'}`}
+                  >
+                    {task.isCompleted ? t('completed') : tEnums('Status.PENDING')}
+                  </Badge>
+                  {task.priority && (
+                    <Badge
+                      variant="outline"
+                      className={`${priorityColors[task.priority]} border bg-background/50 backdrop-blur-md`}
+                    >
+                      {tEnums(`Priority.${task.priority}`)}
+                    </Badge>
+                  )}
+                </div>
+
+                <div className="flex flex-col lg:flex-row gap-6 lg:items-end justify-between">
+                  <div className="space-y-4 max-w-3xl">
+                    <h1
+                      className={`text-3xl lg:text-4xl font-bold tracking-tight leading-tight ${task.isCompleted ? 'text-muted-foreground line-through decoration-muted-foreground/30' : 'text-foreground'}`}
+                    >
+                      {task.title}
+                    </h1>
+                    <div className="flex items-center gap-4 text-sm text-muted-foreground font-medium">
+                      <span className="flex items-center gap-2">
+                        <Clock className="w-4 h-4 text-primary" />
+                        {t('created')} {format.dateTime(new Date(task.createdAt), { dateStyle: 'medium' })}
+                      </span>
+                    </div>
+                  </div>
+
+                  <Button
+                    size="lg"
+                    className={`
+                            relative overflow-hidden rounded-xl px-8 h-12 text-base font-semibold shadow-md transition-all duration-300 shrink-0
+                            ${
+                              task.isCompleted
+                                ? 'bg-background text-foreground border hover:bg-accent hover:text-accent-foreground'
+                                : 'bg-primary text-primary-foreground hover:shadow-lg hover:shadow-primary/25 hover:-translate-y-0.5'
+                            }
+                        `}
+                    onClick={() => toggleComplete(task)}
+                  >
+                    {task.isCompleted ? (
+                      <>
+                        <Circle className="w-5 h-5 mr-2" /> {t('markUncomplete')}
+                      </>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="w-5 h-5 mr-2" /> {t('markComplete')}
+                      </>
+                    )}
+                  </Button>
                 </div>
               </div>
-
-              <Button
-                variant={task.isCompleted ? 'secondary' : 'default'}
-                className="gap-2 min-w-[140px]"
-                onClick={() => toggleComplete(task)}
-              >
-                {task.isCompleted ? (
-                  <>
-                    <CheckCircle2 className="w-4 h-4 text-green-500" /> {t('completed')}
-                  </>
-                ) : (
-                  <>
-                    <Circle className="w-4 h-4" /> {t('markComplete')}
-                  </>
-                )}
-              </Button>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <Card className="md:col-span-2">
-                <CardHeader>
-                  <CardTitle className="text-lg">{t('description')}</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {task.description ? (
-                    <p className="whitespace-pre-wrap leading-relaxed text-muted-foreground">{task.description}</p>
-                  ) : (
-                    <p className="italic text-muted-foreground/50">{t('noDescription')}</p>
-                  )}
-                </CardContent>
-              </Card>
-
-              <div className="space-y-6">
-                <Card>
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-sm font-medium text-muted-foreground uppercase tracking-widest">
-                      {t('details')}
+            {/* Content Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+              {/* Main Content: Description */}
+              <div className="lg:col-span-8 space-y-6">
+                <Card className="h-full border-none shadow-lg bg-card/80 backdrop-blur-sm ring-1 ring-border/50">
+                  <CardHeader className="border-b border-border/50 pb-4 bg-muted/10">
+                    <CardTitle className="text-lg font-bold flex items-center gap-2">
+                      <div className="p-1.5 bg-primary/10 rounded-md">
+                        <Pencil className="w-4 h-4 text-primary" />
+                      </div>
+                      {t('description')}
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-4">
-                    <div>
-                      <h3 className="text-xs font-semibold mb-1 flex items-center gap-2">
-                        <BriefcaseIcon category={task.category} /> {t('category')}
-                      </h3>
-                      <Badge
-                        variant="secondary"
-                        className={`${task.category ? categoryColors[task.category] : ''} border-0`}
-                      >
-                        {task.category ? tEnums(`Category.${task.category}`) : 'None'}
-                      </Badge>
-                    </div>
-
-                    <div>
-                      <h3 className="text-xs font-semibold mb-1 flex items-center gap-2">
-                        <AlertTriangle className="w-3 h-3" /> {t('priority')}
-                      </h3>
-                      <Badge
-                        variant="secondary"
-                        className={`${task.priority ? priorityColors[task.priority] : ''} border-0`}
-                      >
-                        {task.priority ? tEnums(`Priority.${task.priority}`) : 'None'}
-                      </Badge>
-                    </div>
-
-                    {task.suggestedDeadline && (
-                      <div>
-                        <h3 className="text-xs font-semibold mb-1 flex items-center gap-2">
-                          <Calendar className="w-3 h-3" /> {t('deadline')}
-                        </h3>
-                        <p className="text-sm font-medium">
-                          {format.dateTime(new Date(task.suggestedDeadline), { dateStyle: 'medium' })}
-                          <span className="block text-xs text-muted-foreground font-normal">
-                            {format.dateTime(new Date(task.suggestedDeadline), { timeStyle: 'short' })}
-                          </span>
-                        </p>
+                  <CardContent className="pt-8 pb-8 px-6 md:px-8">
+                    {task.description ? (
+                      <div className="prose prose-stone dark:prose-invert max-w-none text-base leading-relaxed whitespace-pre-wrap text-foreground/90">
+                        {task.description}
+                      </div>
+                    ) : (
+                      <div className="flex flex-col items-center justify-center py-16 text-muted-foreground/40 gap-3 border-2 border-dashed rounded-xl">
+                        <Pencil className="w-10 h-10 opacity-20" />
+                        <p className="font-medium">{t('noDescription')}</p>
                       </div>
                     )}
                   </CardContent>
                 </Card>
+              </div>
+
+              {/* Sidebar: Details */}
+              <div className="lg:col-span-4 space-y-6">
+                <div className="sticky top-8">
+                  <Card className="overflow-hidden border-none shadow-lg bg-card/80 backdrop-blur-sm ring-1 ring-border/50">
+                    <CardHeader className="border-b border-border/50 pb-4 bg-muted/10">
+                      <CardTitle className="text-sm font-bold uppercase tracking-widest text-muted-foreground flex items-center gap-2">
+                        <div className="p-1.5 bg-primary/10 rounded-md">
+                          <Tag className="w-3.5 h-3.5 text-primary" />
+                        </div>
+                        {t('details')}
+                      </CardTitle>
+                    </CardHeader>
+                    <CardContent className="p-0">
+                      <div className="divide-y divide-border/50">
+                        <div className="p-5 flex items-center justify-between group hover:bg-muted/5 transition-colors">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400">
+                              <BriefcaseIcon category={task.category} className="w-4 h-4" />
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-xs font-semibold text-muted-foreground uppercase">
+                                {t('category')}
+                              </span>
+                              <span className="text-sm font-medium capitalize text-foreground">
+                                {task.category ? tEnums(`Category.${task.category}`) : '—'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="p-5 flex items-center justify-between group hover:bg-muted/5 transition-colors">
+                          <div className="flex items-center gap-3">
+                            <div className="p-2 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400">
+                              <AlertTriangle className="w-4 h-4" />
+                            </div>
+                            <div className="flex flex-col">
+                              <span className="text-xs font-semibold text-muted-foreground uppercase">
+                                {t('priority')}
+                              </span>
+                              <span className="text-sm font-medium capitalize text-foreground">
+                                {task.priority ? tEnums(`Priority.${task.priority}`) : '—'}
+                              </span>
+                            </div>
+                          </div>
+                          <Badge
+                            variant="outline"
+                            className={`${task.priority ? priorityColors[task.priority] : ''} border bg-transparent font-bold`}
+                          >
+                            {task.priority ? task.priority : ''}
+                          </Badge>
+                        </div>
+
+                        {task.suggestedDeadline && (
+                          <div className="p-5 flex items-center justify-between group hover:bg-muted/5 transition-colors">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 rounded-lg bg-rose-500/10 text-rose-600 dark:text-rose-400">
+                                <Calendar className="w-4 h-4" />
+                              </div>
+                              <div className="flex flex-col">
+                                <span className="text-xs font-semibold text-muted-foreground uppercase">
+                                  {t('deadline')}
+                                </span>
+                                <span className="text-sm font-medium capitalize text-foreground">
+                                  {format.dateTime(new Date(task.suggestedDeadline), { dateStyle: 'medium' })}
+                                </span>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
               </div>
             </div>
           </motion.div>
@@ -290,8 +378,10 @@ export default function TaskPage() {
   )
 }
 
-function BriefcaseIcon({ category }: { category?: string }) {
-  if (!category) return <Tag className="w-3 h-3" />
-  // Could swap icons based on category if desired
-  return <Tag className="w-3 h-3" />
+function BriefcaseIcon({ className }: { category?: string; className?: string }) {
+  const defaultClass = className || 'w-4 h-4'
+  // Here I can add logic for different icons if I want, like:
+  // if (category === 'WORK') return <Briefcase className={defaultClass} />
+  // But for now Tag is fine or specific icons.
+  return <Tag className={defaultClass} />
 }
