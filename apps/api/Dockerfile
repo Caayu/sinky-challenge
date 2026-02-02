@@ -12,57 +12,55 @@ ENV PATH="$PNPM_HOME:$PATH"
 FROM base AS builder
 RUN npm install -g turbo
 COPY . .
-# Prune (recorta) apenas o app api e suas dependências
+# Prune (recorta) apenas o app api
 RUN turbo prune api --docker
 
 # =========================
-# Installer (deps + build + deploy prep)
+# Installer
 # =========================
 FROM base AS installer
-
-# Ativa pnpm
+# Instala compiladores para garantir que nada falhe na instalação
+RUN apt-get update && apt-get install -y python3 make g++
 RUN corepack enable && corepack prepare pnpm@10.28.2 --activate
 
 WORKDIR /app
 
-# Copia arquivos de lock e json do prune
 COPY --from=builder /app/out/json/ .
 COPY --from=builder /app/out/pnpm-lock.yaml ./pnpm-lock.yaml
 
-# Instala dependências
+# Instala todas as dependências
 RUN pnpm install --frozen-lockfile --unsafe-perm
 
-# Copia o código fonte
 COPY --from=builder /app/out/full/ .
 
-# 1. Faz o Build
+# Build do código
 RUN pnpm turbo run build --filter=api...
 
-# 2. Gera deploy isolado (com --legacy para pnpm v10)
+# Prepara a pasta final
 RUN pnpm --filter=api --prod deploy pruned --legacy
 
 # =========================
-# Runner (produção)
+# Runner (A SOLUÇÃO DEFINITIVA)
 # =========================
 FROM node:20.20.0-slim AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
-ENV DATABASE_URL="file:/app/data/sqlite.db"
+# Banco na raiz para não ter erro de pasta
+ENV DATABASE_URL="file:/app/sqlite.db"
 
-RUN addgroup --system --gid 1001 nodejs \
-    && adduser --system --uid 1001 nestjs
+# 1. Copia a aplicação podada
+COPY --from=installer /app/pruned ./
 
-# Cria a pasta data e dá permissão
-RUN mkdir -p /app/data && chown -R nestjs:nodejs /app/data
+# 2. Copia os arquivos necessários para o Drizzle ler o Schema
+COPY --from=installer /app/apps/api/drizzle.config.ts ./
+COPY --from=installer /app/apps/api/src ./src
 
-USER nestjs
+# 3. [O PULO DO GATO] Instala dependências de sistema e o Drizzle Kit GLOBALMENTE
+# Isso garante que o comando 'drizzle-kit' vai existir, independente do package.json
+RUN apt-get update && apt-get install -y openssl \
+    && npm install -g drizzle-kit
 
-# Copia o app preparado
-COPY --from=installer --chown=nestjs:nodejs /app/pruned ./
-
-# Copia configs necessárias para o drizzle rodar
-COPY --from=installer --chown=nestjs:nodejs /app/apps/api/drizzle.config.ts ./
-COPY --from=installer --chown=nestjs:nodejs /app/apps/api/src ./src
-
-CMD ["sh", "-c", "./node_modules/.bin/drizzle-kit push && node dist/main.js"]
+# 4. Comando de inicialização
+# Usa o comando global 'drizzle-kit' que acabamos de instalar
+CMD ["sh", "-c", "drizzle-kit push && node dist/main.js"]
