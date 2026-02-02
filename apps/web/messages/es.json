@@ -96,7 +96,8 @@
     "error": "Error al generar tarea(s)",
     "tooltip1": "Se requiere una clave API para acceder.",
     "tooltip2": "El modelo gemini-flash-latest tiene nivel gratuito.",
-    "tooltipLink": "Obtén tu clave aquí →"
+    "tooltipLink": "Obtén tu clave aquí →",
+    "invalidFormat": "Clave inválida. Debe empezar con AIza"
   },
   "Header": {
     "title": "Magic Tasks",

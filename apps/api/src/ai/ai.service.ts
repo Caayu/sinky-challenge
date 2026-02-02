@@ -165,6 +165,12 @@ export class AiService {
       throw new AiGenerationError('AI returned invalid data format.')
     }
 
-    throw new AiGenerationError()
+    // Capture specific API Key errors
+    if (error.message?.includes('API key') || error.message?.includes('403')) {
+      throw new AiGenerationError('Invalid or expired API Key.')
+    }
+
+    // Propagate original error message if available, otherwise default
+    throw new AiGenerationError(error.message || 'Failed to process AI request')
   }
 }

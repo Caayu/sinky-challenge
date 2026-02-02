@@ -66,6 +66,12 @@ export function AiTaskGenerator({ onTaskCreated }: { onTaskCreated: () => void }
 
   const handleGenerate = () => {
     if (!prompt || !apiKey) return
+
+    if (!apiKey.startsWith('AIza')) {
+      toast.error(t('invalidFormat'))
+      return
+    }
+
     mutate()
   }
 

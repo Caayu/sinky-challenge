@@ -97,7 +97,8 @@
     "error": "Failed to generate task(s)",
     "tooltip1": "An API Key is required to access Google's AI service.",
     "tooltip2": "The model gemini-flash-latest has a free tier.",
-    "tooltipLink": "Get your key here →"
+    "tooltipLink": "Get your key here →",
+    "invalidFormat": "Invalid Key. Must start with AIza"
   },
   "Header": {
     "title": "Magic Tasks",
